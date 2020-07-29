@@ -1,6 +1,9 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 
+# Initially, the database isn't bound to an app. This is so
+# we can bind to one while our app is being created in our
+# app factory.
 db = SQLAlchemy()
 
 class User(db.Model):
@@ -13,7 +16,7 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User: {} [{}]>'.format(self.name, self.id)
-    
+
 
 class Link(db.Model):
     __tablename__ = 'link'
