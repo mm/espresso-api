@@ -1,4 +1,5 @@
 from datetime import datetime
+from pytz import timezone
 from flask_sqlalchemy import SQLAlchemy
 
 # Initially, the database isn't bound to an app. This is so
@@ -22,7 +23,7 @@ class Link(db.Model):
     __tablename__ = 'link'
 
     id = db.Column(db.Integer, primary_key=True)
-    date_added = db.Column(db.DateTime, nullable=False, default=datetime.now())
+    date_added = db.Column(db.DateTime, nullable=False, default=datetime.utcnow().replace(tzinfo=timezone('America/Toronto')))
     url = db.Column(db.String(2048), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     title = db.Column(db.String(512), nullable=True)
@@ -30,3 +31,14 @@ class Link(db.Model):
 
     def __repr__(self):
         return '<Link: {} [{}]>'.format(self.url, self.id)
+
+    def to_dict(self):
+        """Returns a dict representation of a saved link.
+        """
+        return {
+            'id': self.id,
+            'date_added': self.date_added.strftime('%Y-%m-%d %I:%M %p %Z'),
+            'url': self.url,
+            'title': self.title,
+            'read': self.read
+        }
