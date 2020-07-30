@@ -11,4 +11,4 @@ api_bp = Blueprint('api_bp', __name__)
 @api_bp.route('/')
 @api_key_auth
 def index(current_user=None):
-    pass
+    return 'hi'
