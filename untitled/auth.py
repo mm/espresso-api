@@ -2,9 +2,11 @@
 whether an API key matches the hash stored on record for a user.
 """
 
+from functools import wraps
 from typing import NamedTuple
 from uuid import uuid4
 from hashlib import sha256
+from flask import request, jsonify
 from untitled.model import User
 
 api_pair = NamedTuple('KeyDetails', [('api_key', str), ('hashed_key', str)])
@@ -44,3 +46,35 @@ def validate_api_key(user_id: int, api_key: str) -> bool:
         return False
     
     return user_hash == submitted_hash
+
+
+def user_for_api_key(api_key: str) -> User:
+    """Returns a User object for a specified API key,
+    or None if no user exists with that key.
+    """
+    
+    if api_key:
+        # Compute SHA-256 hash of API key to query table for:
+        key_hash = sha256(api_key.encode('utf-8')).hexdigest()
+
+        # Check table for a User with that key:
+        user = User.query.filter_by(api_key=key_hash).first()
+        return user
+    return None
+
+
+def api_key_auth(f):
+    """Wraps a view function to check the `x-api-key` header against
+    an API key stored in the database. Will yield a 403 if unsuccessful,
+    or return the view function with the `current_user` variable populated
+    as a User object otherwise.
+    """
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        api_key = request.headers.get('x-api-key')
+        user = user_for_api_key(api_key)
+        if user is None:
+            return jsonify(error="Invalid API key"), 403
+        return f(*args, **kwargs, current_user=user)
+    return decorated_function
