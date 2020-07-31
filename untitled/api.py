@@ -3,7 +3,7 @@ routes will be prefixed with /api.
 """
 
 from flask import Blueprint, jsonify, request
-from untitled.model import db
+from untitled.model import db, Link
 from untitled.auth import api_key_auth
 
 api_bp = Blueprint('api_bp', __name__)
@@ -32,24 +32,47 @@ def links(current_user=None):
     links (data received in JSON payload)
     """
     if request.method == 'GET':
-        # Fetch all links, applying pagination as necessary
-        # Check 'page' URL parameter to get what page we're on and
-        # adjust result set as necessary
-        # TODO: Don't just fetch the whole set, paginate
-        results = [link.to_dict() for link in current_user.links]
-        return jsonify(
-            number_of_links=len(current_user.links),
-            page=1,
-            total_pages=1,
-            next_page=1,
-            links=results
-        )
+        
+        # Default to page 1, with 20 URLs per page:
+        try:
+            page = int(request.args.get('page', 1))
+            per_page = int(request.args.get('per_page', 20))
+        except ValueError:
+            return jsonify(error="If provided, page and per_page must be integers"), 400
+
+        try:
+            link_query = Link.query.filter(Link.user_id==current_user.id).order_by(Link.date_added).paginate(
+                page=page, per_page=per_page
+            )
+            # Here, `items` is the Link objects for the current page:
+            results = [link.to_dict() for link in link_query.items]
+            return jsonify(
+                total_links=len(current_user.links),
+                page=link_query.page,
+                total_pages=link_query.pages,
+                next_page=link_query.next_num,
+                per_page=per_page,
+                links=results
+            )
+        except Exception as e:
+            # TODO: Way better error handling here (i.e. dealing w/ pagination inputs)
+            print(f'Error fetching links: {e}')
+            return jsonify(error="Error fetching links"), 500
+
     # Otherwise, we're creating a new link
     # TODO: Implement POST
-    # 1) Collect information via the JSON body of the request
-    # 2) Validate info
-    # 3) If title isn't specified, attempt to scrape the site to get it
-    # 4) Ultimately add to database and return ID
+    # Collect information via the JSON body of the request
+    body = request.get_json()
+    # At minimum, the body needs to have a `url` key. Without it, we can't even
+    # infer the title. So we check for this outright:
+    if body and ('url' in [*body]):
+        # 2) Validate info
+        # 3) If title isn't specified, attempt to scrape the site to get it
+        # 4) Ultimately add to database and return ID
+        return 'POST received'
+    else:
+        # JSON was invalid
+        return jsonify(error="Must POST valid JSON data"), 400
 
 
 @api_bp.route('/links/<int:id>', methods=['GET', 'PUT', 'PATCH', 'DELETE'])

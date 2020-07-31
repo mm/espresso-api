@@ -42,3 +42,12 @@ class Link(db.Model):
             'title': self.title,
             'read': self.read
         }
+
+    @classmethod
+    def create_link(url, title=None):
+        """Adds a link to the database. If the title attribute is None,
+        will call a helper function to attempt to scrape the title from
+        the HTML of the website passed in. Will also raise an exception
+        if the URL ended up being invalid.
+        """
+        pass
