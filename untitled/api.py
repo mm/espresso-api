@@ -2,7 +2,7 @@
 routes will be prefixed with /api.
 """
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, make_response, url_for
 from untitled.model import db, Link
 from untitled.auth import api_key_auth
 
@@ -60,16 +60,18 @@ def links(current_user=None):
             return jsonify(error="Error fetching links"), 500
 
     # Otherwise, we're creating a new link
-    # TODO: Implement POST
     # Collect information via the JSON body of the request
     body = request.get_json()
     # At minimum, the body needs to have a `url` key. Without it, we can't even
     # infer the title. So we check for this outright:
     if body and ('url' in [*body]):
-        # 2) Validate info
-        # 3) If title isn't specified, attempt to scrape the site to get it
-        # 4) Ultimately add to database and return ID
-        return 'POST received'
+        # Pass everything to the `create_link` function (anything extranneous will
+        # be ignored):
+        link_id = current_user.create_link(**body)
+        new_link = Link.query.get(link_id)
+        response = make_response(jsonify(new_link.to_dict()), 201)
+        response.headers['Location'] = url_for('api_bp.link', id=link_id)
+        return response
     else:
         # JSON was invalid
         return jsonify(error="Must POST valid JSON data"), 400
