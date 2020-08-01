@@ -8,6 +8,8 @@ from untitled.auth import api_key_auth
 
 api_bp = Blueprint('api_bp', __name__)
 
+# TODO: Register exception handlers for custom exceptions
+
 @api_bp.route('/user', methods=['GET'])
 @api_key_auth
 def user(current_user=None):
@@ -77,9 +79,29 @@ def links(current_user=None):
         return jsonify(error="Must POST valid JSON data"), 400
 
 
-@api_bp.route('/links/<int:id>', methods=['GET', 'PUT', 'PATCH', 'DELETE'])
+@api_bp.route('/links/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
 @api_key_auth
 def link(id, current_user=None):
     """Methods for fetching, updating or deleting a link.
     """
-    return f'Received {id}'
+    # Calling .first_or_404() will automatically yield a 404 if no
+    # item was found:
+    link = Link.query.get_or_404(id)
+    # Check: does the current user even have permission to access
+    # the link?
+    if link.user_id != current_user.user_id:
+        return jsonify(error="You are not authorized to access this item"), 403
+
+    if request.method == 'GET':
+        # Simply return JSON representing the link
+        return link.to_dict()
+    elif request.method == 'PATCH':
+        # Update a field or two in the link, based on the payload
+        return 'PATCH received'
+    elif request.method == 'DELETE':
+        # Cast the link out of existence!
+        db.session.delete(link)
+        db.session.commit()
+        return jsonify(message=f"Link with ID {id} deleted successfully"), 200
+
+
