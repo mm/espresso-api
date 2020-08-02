@@ -53,24 +53,19 @@ def links(current_user=None):
         except ValueError:
             raise InvalidUsage(message="The page and per_page parameters must be integers")
 
-        try:
-            link_query = Link.query.filter(Link.user_id==current_user.id).order_by(Link.date_added).paginate(
-                page=page, per_page=per_page
-            )
-            # Here, `items` is the Link objects for the current page:
-            results = [link.to_dict() for link in link_query.items]
-            return jsonify(
-                total_links=len(current_user.links),
-                page=link_query.page,
-                total_pages=link_query.pages,
-                next_page=link_query.next_num,
-                per_page=per_page,
-                links=results
-            )
-        except Exception as e:
-            # TODO: Way better error handling here (i.e. dealing w/ pagination inputs)
-            print(f'Error fetching links: {e}')
-            return jsonify(error="Error fetching links"), 500
+        link_query = Link.query.filter(Link.user_id==current_user.id).order_by(Link.date_added).paginate(
+            page=page, per_page=per_page
+        )
+        # Here, `items` is the Link objects for the current page:
+        results = [link.to_dict() for link in link_query.items]
+        return jsonify(
+            total_links=len(current_user.links),
+            page=link_query.page,
+            total_pages=link_query.pages,
+            next_page=link_query.next_num,
+            per_page=per_page,
+            links=results
+        )
 
     # Otherwise, we're creating a new link
     # Collect information via the JSON body of the request
