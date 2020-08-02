@@ -2,7 +2,7 @@ from datetime import datetime
 from pytz import timezone
 from flask_sqlalchemy import SQLAlchemy
 from urllib.parse import urlparse
-from untitled.exceptions import URLInvalidError
+from untitled.exceptions import InvalidUsage
 from untitled.helpers import extract_title_from_url
 
 # Initially, the database isn't bound to an app. This is so
@@ -31,7 +31,7 @@ class User(db.Model):
         """
         # Check for an invalid URL by parsing it first
         if url and urlparse(url).scheme not in ['http', 'https']:
-            raise URLInvalidError
+            raise InvalidUsage(message="URL is invalid: please check it starts with http:// or https://")
         
         # Try and extract our title from the URL if it's not provided.
         # If the title can't be extracted, a value of None is still okay.

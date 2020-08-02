@@ -12,8 +12,10 @@ admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.cli.command('create_db')
 def create_db():
-    """Initializes the database.
+    """Initializes the database (if tables already
+    exist, they won't be re-created)
     """
+    print("Creating database...")
     db.create_all()
 
 
