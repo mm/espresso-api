@@ -2,9 +2,10 @@
 routes will be prefixed with /api.
 """
 
-from flask import Blueprint, jsonify, request, make_response, url_for
-from sqlalchemy.exc import StatementError
-from untitled.model import db, Link
+from flask import Blueprint, jsonify, request, make_response, url_for, current_app
+from sqlalchemy.exc import SQLAlchemyError
+from untitled.model import db, Link, UserSchema, LinkSchema
+from marshmallow import ValidationError
 from untitled.auth import api_key_auth
 from untitled.exceptions import InvalidUsage
 
@@ -24,15 +25,27 @@ def handle_not_found(error):
 def handle_server_error(error):
     return jsonify(error="An unknown error while accessing resource"), 500
 
+@api_bp.errorhandler(SQLAlchemyError)
+def handle_sqa_general(error):
+    """Catch-all for any SQLAlchemy error we haven't caught explicitly already"""
+    current_app.logger.error(f"Database error: {error}")
+    return jsonify(error="An error occured while communicating with the database"), 500
+
+@api_bp.errorhandler(ValidationError)
+def handle_validation_error(error):
+    """Catches exceptions related to data validation in Marshmallow"""
+    return jsonify(error="The submitted data failed validation checks", issues=error.messages), 422
+
 
 @api_bp.route('/user', methods=['GET'])
 @api_key_auth
 def user(current_user=None):
     """Returns information about the user (authenticated via API key).
     """
+    # Pull only the user ID and name from the users table:
+    user_details = UserSchema().dump(current_user)
     return jsonify(
-        user_id=current_user.id,
-        name=current_user.name,
+        **user_details,
         links=len(current_user.links)
     ), 200
 
@@ -44,6 +57,7 @@ def links(current_user=None):
     to another page of links), or allows for the creation of new
     links (data received in JSON payload)
     """
+    schema = LinkSchema()
     if request.method == 'GET':
         
         # Default to page 1, with 20 URLs per page:
@@ -57,7 +71,7 @@ def links(current_user=None):
             page=page, per_page=per_page
         )
         # Here, `items` is the Link objects for the current page:
-        results = [link.to_dict() for link in link_query.items]
+        results = [schema.dump(link) for link in link_query.items]
         return jsonify(
             total_links=len(current_user.links),
             page=link_query.page,
@@ -70,15 +84,12 @@ def links(current_user=None):
     # Otherwise, we're creating a new link
     # Collect information via the JSON body of the request
     body = request.get_json()
-    # At minimum, the body needs to have a `url` key. Without it, we can't even
-    # infer the title. So we check for this outright:
-    if body and ('url' in [*body]):
+    if body:
         # Pass everything to the `create_link` function (anything extranneous will
         # be ignored):
-        # TODO: Validate input (will currently raise exception, but could be prettier)
         link_id = current_user.create_link(**body)
         new_link = Link.query.get(link_id)
-        response = make_response(jsonify(new_link.to_dict()), 201)
+        response = make_response(jsonify(**schema.dump(new_link)), 201)
         response.headers['Location'] = url_for('api_bp.link', id=link_id)
         return response
     else:
@@ -90,6 +101,7 @@ def links(current_user=None):
 def link(id, current_user=None):
     """Methods for fetching, updating or deleting a link.
     """
+    schema = LinkSchema()
     # Calling .first_or_404() will automatically yield a 404 if no
     # item was found (we registered an exception handler to catch this)
     link = Link.query.get_or_404(id)
@@ -100,7 +112,7 @@ def link(id, current_user=None):
         raise InvalidUsage(message="You are not authorized to access this item", status_code=403)
 
     if request.method == 'GET':
-        return jsonify(link.to_dict())
+        return jsonify(schema.dump(link))
     elif request.method == 'PATCH':
         # Update a field or two in the link, based on the payload. Really,
         # all we can modify is the title, the URL or the read status (or

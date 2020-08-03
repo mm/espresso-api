@@ -3,16 +3,20 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from dotenv import load_dotenv
 from untitled.api import api_bp
 from untitled.cli import admin_bp
 
-def create_app():
+def create_app(config='dev'):
     """The application factory for Untitled. Sets up configuration
     parameters, sets up the database connection and hooks up the view
     blueprints for all the API routes.
     """
 
     app = Flask(__name__)
+    if config == 'stg':
+        # Helper for still loading .env files if testing Gunicorn locally:
+        load_dotenv()
     # Required by SQLAlchemy -- for local development this is
     # loaded in via a .env file:
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
