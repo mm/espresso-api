@@ -3,40 +3,24 @@ routes will be prefixed with /api.
 """
 
 from flask import Blueprint, jsonify, request, make_response, url_for, current_app
+from marshmallow import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 from untitled.model import db, Link, UserSchema, LinkSchema
-from marshmallow import ValidationError
 from untitled.auth import api_key_auth
 from untitled.exceptions import InvalidUsage
+import untitled.handlers as handlers
 
 api_bp = Blueprint('api_bp', __name__)
 
-@api_bp.errorhandler(InvalidUsage)
-def handle_invalid_data(error):
-    response = jsonify(error.to_dict())
-    response.status_code = error.status_code
-    return response
-
-@api_bp.errorhandler(404)
-def handle_not_found(error):
-    return jsonify(error="Requested resource was not found in the database"), 404
-
-@api_bp.errorhandler(500)
-def handle_server_error(error):
-    return jsonify(error="An unknown error while accessing resource"), 500
-
-@api_bp.errorhandler(SQLAlchemyError)
-def handle_sqa_general(error):
-    """Catch-all for any SQLAlchemy error we haven't caught explicitly already"""
-    current_app.logger.error(f"Database error: {error}")
-    return jsonify(error="An error occured while communicating with the database"), 500
-
-@api_bp.errorhandler(ValidationError)
-def handle_validation_error(error):
-    """Catches exceptions related to data validation in Marshmallow"""
-    return jsonify(error="The submitted data failed validation checks", issues=error.messages), 422
+#  Exception handlers:
+api_bp.register_error_handler(404, handlers.handle_not_found)
+api_bp.register_error_handler(500, handlers.handle_server_error)
+api_bp.register_error_handler(InvalidUsage, handlers.handle_invalid_data)
+api_bp.register_error_handler(SQLAlchemyError, handlers.handle_sqa_general)
+api_bp.register_error_handler(ValidationError, handlers.handle_validation_error)
 
 
+#  /user routes:
 @api_bp.route('/user', methods=['GET'])
 @api_key_auth
 def user(current_user=None):
@@ -50,6 +34,7 @@ def user(current_user=None):
     ), 200
 
 
+# /links routes:
 @api_bp.route('/links', methods=['GET', 'POST'])
 @api_key_auth
 def links(current_user=None):
@@ -59,7 +44,6 @@ def links(current_user=None):
     """
     schema = LinkSchema()
     if request.method == 'GET':
-        
         # Default to page 1, with 20 URLs per page:
         try:
             page = int(request.args.get('page', 1))
@@ -71,7 +55,7 @@ def links(current_user=None):
             page=page, per_page=per_page
         )
         # Here, `items` is the Link objects for the current page:
-        results = [schema.dump(link) for link in link_query.items]
+        results = schema.dump(link_query.items, many=True)
         return jsonify(
             total_links=len(current_user.links),
             page=link_query.page,
@@ -117,17 +101,17 @@ def link(id, current_user=None):
         # Update a field or two in the link, based on the payload. Really,
         # all we can modify is the title, the URL or the read status (or
         # a combination of all three)
-        
         body = request.get_json()
         if body is None:
             raise InvalidUsage(message="This method expects valid JSON data as the request body")
+        # Validate the incoming JSON to make sure any changes conform to the schema:
+        errors = schema.validate(body, partial=True)
+        if errors:
+            raise ValidationError(message=errors)
         for key, value in body.items():
-            # TODO: Validate input (will currently raise exception, but could be prettier)
             if hasattr(link, key) and getattr(link, key) != value:
-                # If the Link object *has* the attribute described in
-                # the request, and the value in the request is different
-                # than what's stored in the database, change the value in
-                # the database:
+                # Make a change to the Link object stored in the database
+                # if the values actually differ:
                 setattr(link, key, value)
         # If we've made any changes, commit them:
         db.session.commit()
