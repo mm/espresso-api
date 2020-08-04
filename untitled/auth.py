@@ -19,7 +19,7 @@ def generate_api_key() -> api_pair:
     to the database.
     """
 
-    api_key = str(uuid4())
+    api_key = str(uuid4()).replace('-', '')
     hash_value = sha256(api_key.encode('utf-8')).hexdigest()
     return api_pair(api_key, hash_value)
 
@@ -39,7 +39,7 @@ def validate_api_key(user_id: int, api_key: str) -> bool:
 
     # Get hash for user ID in database:
     try:
-        user = User.query.filter_by(id=user_id).first()
+        user = User.query.get(user_id)
         user_hash = user.api_key
     except Exception as e:
         print("User fetching failed.")

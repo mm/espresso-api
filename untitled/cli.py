@@ -40,3 +40,29 @@ def create_user():
     except Exception as e:
         # TODO: This needs much better error handling -- should handle DB errors separately.
         print("User generation failed.")
+
+
+@admin_bp.cli.command('rotate_key')
+def rotate_user_key():
+    """Re-generates a user's API key given the previous one.
+    """
+    print("This will re-generate your API key.")
+    user_id = int(input("Specify a user ID: "))
+    existing_key = str(input("Existing API key: "))
+
+    if user_id is None or existing_key is None:
+        print("User ID and API key are required.")
+        return None
+
+    user = User.query.get(user_id)
+    if user is None:
+        print("User does not exist.")
+        return None
+    
+    if validate_api_key(user_id, existing_key):
+        key = generate_api_key()
+        user.api_key = key.hashed_key
+        print(f"New API key is: {key.api_key}")
+        db.session.commit()
+    else:
+        print("API key validation failed.")
