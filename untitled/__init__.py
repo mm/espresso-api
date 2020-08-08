@@ -17,6 +17,8 @@ def create_app(config='dev'):
     if config == 'stg':
         # Helper for still loading .env files if testing Gunicorn locally:
         load_dotenv()
+    elif config == 'testing':
+        app.config['TESTING'] = True
     # Required by SQLAlchemy -- for local development this is
     # loaded in via a .env file:
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')

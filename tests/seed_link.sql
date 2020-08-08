@@ -1,0 +1,1 @@
+INSERT INTO link (date_added, url, user_id, title, read) VALUES ('2020-08-01 09:30:00', 'https://mascioni.ca', 1, 'Matthew Mascioni', TRUE);
