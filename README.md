@@ -63,18 +63,20 @@ Returns information about the current user (detected via API key).
 * **URL**: `/api/user`
 * **Method**: `GET`
 
-#### Example successful response:
+#### GET /api/user:
 
-* **Code**: `200`
-* **Response body**:
+* **Example successful response:**
 
-    ```json
-    {
-    "id": 1, 
-    "links": 7, 
-    "name": "Matt"
-    }
-    ```
+    * **Code**: `200`
+    * **Response body**:
+
+        ```json
+        {
+            "id": 1, 
+            "links": 7, 
+            "name": "Matt"
+        }
+        ```
 
 ### Retrieving or adding links: /api/links
 
@@ -117,6 +119,131 @@ Returns a list of links belonging to the current user. By default, this will pag
 #### POST /api/links
 
 Adds a new link to the database. If a title wasn't provided, the backend attempts to infer one from the `<title>` element of the URL passed in. A JSON representation of the link will be returned in the response, with a `201` code if successful.
+
+* **Request body**: Must be valid JSON of this form:
+
+    ```json
+    {
+        "title": "Apple",
+        "url": "https://apple.com"
+    }
+    ```
+
+    Note that only `url` is required. If `title` wasn't passed in, the title is inferred from the site's `<title>` element.
+
+* **Example successful response:**:
+
+    * **Code:** 201
+    * **Response body:**
+
+        ```json
+        {
+            "date_added": "2020-08-15 10:31 PM ", 
+            "id": 30, 
+            "read": false, 
+            "title": "Apple", 
+            "url": "https://apple.com"
+        }
+        ```
+        Note that `date_added` is in UTC.
+
+    * **Location Header:** `http://localhost/api/links/30`
+
+* **Example validation error:**:
+
+    Returned if, for example, the URL is invalid.
+
+    * **Code:** 422
+    * **Response body:**
+
+        ```json
+        {
+            "issues": {
+                "url": [
+                    "Not a valid URL."
+                ]
+            }, 
+            "message": "The submitted data failed validation checks"
+        }
+        ```
+
+### Retrieving, updating or deleting links: /api/links/:id
+
+Allows manipulation or retrieval of a given link stored in the database. If the link at the ID specified is not owned by the current user, a `403 Forbidden` is returned. 
+
+* **URL**: `/api/links/:id`
+* **Required**: `:id (integer)`
+* **Method**: `GET, PATCH, DELETE`
+
+#### GET /api/links/:id
+
+Retrieves a link from the database with a given ID, or returns a `404` if the link wasn't found.
+
+* **Example successful response:**
+
+    `GET /api/links/30`
+
+    **Code**: 200
+
+    **Response body**:
+
+        ```json
+        {
+            "date_added": "2020-08-15 10:31 PM ", 
+            "id": 30, 
+            "read": false, 
+            "title": "Apple", 
+            "url": "https://apple.com"
+        }
+        ```
+        Note that `date_added` is in UTC.
+
+#### PATCH /api/links/:id
+
+Updates a field in the database for a link with a given ID. Returns a `404` if the link wasn't found to begin with, or `422` if new data failed validation. Only fields passed in to the request body are updated.
+
+* **Request Body**: JSON describing the fields to be changed and the new values. Keys can be any (or a combination) of `title, url, read` to change the URL's title, URL or read status (true/false) respectively.
+
+* **Example successful request**:
+
+    `PATCH /api/links/30`
+
+    **Request body:**
+
+    ```json
+    {"read": true }
+    ```
+
+    **Code:** 200
+    **Response body:**
+
+    ```json
+    {
+        "message": "Link with ID 30 updated successfully"
+    }
+    ```
+
+#### DELETE /api/links/:id
+
+Deletes an entry in the database for a link with a given ID. Returns a `404` if the link wasn't found. 
+
+* **Example successful response**:
+
+    `DELETE /api/links/30`
+
+    **Code:** 200
+    **Response body:**
+
+    ```json
+    {
+        "message": "Link with ID 30 deleted successfully"
+    }
+    ```
+
+
+
+
+
 
 
 
