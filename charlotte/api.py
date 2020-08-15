@@ -69,8 +69,8 @@ def links(current_user=None):
     # Collect information via the JSON body of the request
     body = request.get_json()
     if body:
-        # Pass everything to the `create_link` function (anything extranneous will
-        # be ignored):
+        # Pass everything to the `create_link` function (data validation
+        # will be performed here too)
         link_id = current_user.create_link(**body)
         new_link = Link.query.get(link_id)
         response = make_response(jsonify(**schema.dump(new_link)), 201)

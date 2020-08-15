@@ -75,6 +75,6 @@ def api_key_auth(f):
         api_key = request.headers.get('x-api-key')
         user = user_for_api_key(api_key)
         if user is None:
-            return jsonify(error="Invalid API key. Please specify a key via the x-api-key header."), 403
+            return jsonify(message="Invalid API key. Please specify a key via the x-api-key header."), 403
         return f(*args, **kwargs, current_user=user)
     return decorated_function

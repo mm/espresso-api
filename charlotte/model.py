@@ -36,8 +36,10 @@ class User(db.Model):
         
         # Load into the Link schema to catch any errors. We'll catch ValidationErrors
         # at the blueprint level:
-        data = LinkSchema().validate(dict(user_id=self.id, title=title, url=url))
-        
+        errors = LinkSchema().validate(dict(user_id=self.id, title=title, url=url))
+        if errors:
+            raise ValidationError(message=errors)
+
         # Try and extract our title from the URL if it's not provided.
         # If the title can't be extracted, a value of None is still okay.
         if title is None:
@@ -78,7 +80,7 @@ class UserSchema(Schema):
 class LinkSchema(Schema):
     id = fields.Int(strict=True, required=True, dump_only=True)
     date_added = fields.DateTime(format="%Y-%m-%d %I:%M %p %Z")
-    url = fields.URL(required=True, relative=False)
+    url = fields.URL(required=True, relative=False, require_tld=True)
     user_id = fields.Int(strict=True, required=True, load_only=True)
     title = fields.Str(allow_none=True)
     read = fields.Bool(default=False)
