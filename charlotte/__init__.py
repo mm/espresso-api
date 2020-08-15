@@ -4,11 +4,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
-from untitled.api import api_bp
-from untitled.cli import admin_bp
+from charlotte.api import api_bp
+from charlotte.cli import admin_bp
 
 def create_app(config='dev'):
-    """The application factory for Untitled. Sets up configuration
+    """The application factory for Charlotte. Sets up configuration
     parameters, sets up the database connection and hooks up the view
     blueprints for all the API routes.
     """
@@ -23,7 +23,7 @@ def create_app(config='dev'):
     # loaded in via a .env file:
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    from untitled.model import db
+    from charlotte.model import db
     db.init_app(app)
     # Set up rate limiting on all API routes:
     limiter = Limiter(app=app, key_func=get_remote_address, default_limits=["5 per second", "150 per day"])

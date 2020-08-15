@@ -1,1 +1,1 @@
-web: gunicorn "untitled:create_app('prod')"
+web: gunicorn "charlotte:create_app('prod')"

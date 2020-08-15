@@ -1,4 +1,4 @@
-"""Helper functions used in Untitled.
+"""Helper functions used in Charlotte.
 """
 
 import requests

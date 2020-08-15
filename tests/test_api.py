@@ -1,11 +1,13 @@
+"""Tests on all Charlotte API routes."""
+
 import os
 import tempfile
 import pytest
 
 from flask import url_for
 
-from untitled import create_app
-from untitled.model import db
+from charlotte import create_app
+from charlotte.model import db
 
 VALID_API_KEY = '189f8f7b42944ba7bca361666c9fdded'
 

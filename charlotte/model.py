@@ -2,8 +2,8 @@ from datetime import datetime
 from pytz import timezone
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import Schema, fields, ValidationError
-from untitled.exceptions import InvalidUsage
-from untitled.helpers import extract_title_from_url
+from charlotte.exceptions import InvalidUsage
+from charlotte.helpers import extract_title_from_url
 
 # Initially, the database isn't bound to an app. This is so
 # we can bind to one while our app is being created in our

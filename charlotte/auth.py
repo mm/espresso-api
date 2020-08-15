@@ -7,7 +7,7 @@ from typing import NamedTuple
 from uuid import uuid4
 from hashlib import sha256
 from flask import request, jsonify
-from untitled.model import User
+from charlotte.model import User
 
 api_pair = NamedTuple('KeyDetails', [('api_key', str), ('hashed_key', str)])
 

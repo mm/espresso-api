@@ -4,8 +4,8 @@ over the Flask CLI.
 
 import click
 from flask import Blueprint
-from untitled.model import db, User
-from untitled.auth import generate_api_key, validate_api_key
+from charlotte.model import db, User
+from charlotte.auth import generate_api_key, validate_api_key
 
 # You can run these with `flask admin <command here>`:
 admin_bp = Blueprint('admin', __name__)

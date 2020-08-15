@@ -5,8 +5,8 @@ import os
 import tempfile
 
 import pytest
-from untitled import create_app
-from untitled.model import db
+from charlotte import create_app
+from charlotte.model import db
 
 # Seed the database with a user and one link associated to them to start out:
 # (Also, SQLite complains when you execute multiple statements in one file so
@@ -27,7 +27,7 @@ def app():
     # the location of our temporary DB:
     db_fd, db_url = tempfile.mkstemp()
     os.environ['DATABASE_URL'] = 'sqlite:///'+db_url
-    os.environ['FLASK_APP'] = 'untitled'
+    os.environ['FLASK_APP'] = 'charlotte'
     app = create_app('testing')
 
     with app.app_context():

@@ -1,14 +1,14 @@
-"""Blueprint containing API routes for Untitled. All
+"""Blueprint containing API routes for Charlotte. All
 routes will be prefixed with /api.
 """
 
 from flask import Blueprint, jsonify, request, make_response, url_for, current_app
 from marshmallow import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
-from untitled.model import db, Link, UserSchema, LinkSchema
-from untitled.auth import api_key_auth
-from untitled.exceptions import InvalidUsage
-import untitled.handlers as handlers
+from charlotte.model import db, Link, UserSchema, LinkSchema
+from charlotte.auth import api_key_auth
+from charlotte.exceptions import InvalidUsage
+import charlotte.handlers as handlers
 
 api_bp = Blueprint('api_bp', __name__)
 
