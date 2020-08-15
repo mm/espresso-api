@@ -51,7 +51,7 @@ def links(current_user=None):
         except ValueError:
             raise InvalidUsage(message="The page and per_page parameters must be integers")
 
-        link_query = Link.query.filter(Link.user_id==current_user.id).order_by(Link.date_added).paginate(
+        link_query = Link.query.filter(Link.user_id==current_user.id).order_by(Link.date_added.desc()).paginate(
             page=page, per_page=per_page
         )
         # Here, `items` is the Link objects for the current page:

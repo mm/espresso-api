@@ -1,4 +1,5 @@
 from datetime import datetime
+import pytz
 from pytz import timezone
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import Schema, fields, ValidationError
@@ -13,6 +14,7 @@ db = SQLAlchemy()
 # ORM Models:
 
 class User(db.Model):
+    """Represents a user in the database."""
     __tablename__ = 'user'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -49,10 +51,12 @@ class User(db.Model):
 
 
 class Link(db.Model):
+    """Represents a link stored in the database. All datetimes are stored as UTC.
+    """
     __tablename__ = 'link'
 
     id = db.Column(db.Integer, primary_key=True)
-    date_added = db.Column(db.DateTime, nullable=False, default=datetime.now())
+    date_added = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.utc))
     url = db.Column(db.String(2048), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     title = db.Column(db.String(512), nullable=True)
@@ -60,17 +64,6 @@ class Link(db.Model):
 
     def __repr__(self):
         return '<Link: {} [{}]>'.format(self.url, self.id)
-
-    def to_dict(self):
-        """Returns a dict representation of a saved link.
-        """
-        return {
-            'id': self.id,
-            'date_added': self.date_added.replace(tzinfo=timezone('America/Toronto')).strftime('%Y-%m-%d %I:%M %p %Z'),
-            'url': self.url,
-            'title': self.title,
-            'read': self.read
-        }
 
 
 # Schema:
