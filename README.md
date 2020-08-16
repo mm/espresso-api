@@ -9,9 +9,37 @@ This will get you started on getting Charlotte installed locally to play with th
 ### Prerequisites
 
 * A computer with Python 3.6+ installed
-* Docker already installed and ready to go
+* Docker already installed and ready to go (or a local PostgreSQL instance if you're running without Docker)
 
-### Installing
+Choose your adventure! 
+
+* [Installing locally with Docker Compose]()
+* [Installing locally without Docker]()
+
+### Installing locally (with Docker Compose)
+
+1. Clone this repository in the directory of your choosing: `git clone https://github.com/mm/charlotte-api.git`
+
+2. Ensure [Docker](https://www.docker.com/) is running (and Docker Compose [is installed](https://docs.docker.com/compose/install/))
+
+3. Make a copy of the `dev/environment.example` file as `dev/environment`: `cp dev/environment.example dev/environment`
+
+4. Update environment variables in `dev/environment`: Update `an_insecure_password` to something a little more randomly generated. This will allow you to connect to the DB locally if you're interested in how it updates.
+
+5. Build and run Charlotte! `docker-compose up --build`
+
+6. Once everything's up and running, use the CLI to initialize the database and create a new user/API key (make note of this key as we'll be making requests with it soon!):
+
+    ```console
+    docker-compose run web flask admin create_db
+    docker-compose run web flask admin create_user
+    ```
+
+7. You should be able to access the API at `http://127.0.0.1:8000`. Once you're done, stop any running containers with `docker-compose down`. 
+
+8. When running in the future, you don't need to re-initialize the database, simply run `docker-compose up` in the project directory and you're ready to go!
+
+### Installing locally (Manual)
 
 1. Clone this repository in the directory of your choosing: `git clone https://github.com/mm/charlotte-api.git`
 

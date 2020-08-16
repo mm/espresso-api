@@ -2,7 +2,26 @@ version: '3'
 
 services:
     web:
+        restart: always
         build: .
         command: gunicorn --bind 0.0.0.0:8000 "charlotte:create_app()"
         ports:
             - "8000:8000"
+        links:
+            - db:db
+        env_file:
+            - dev/environment
+    
+    db:
+        restart: always
+        image: postgres:latest
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        ports:
+            # Just in case 5432 is already occupied on the host:
+            - "5433:5432"
+        env_file:
+            - dev/environment
+
+volumes:
+    db-data:
