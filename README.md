@@ -13,8 +13,8 @@ This will get you started on getting Charlotte installed locally to play with th
 
 Choose your adventure! 
 
-* [Installing locally with Docker Compose]()
-* [Installing locally without Docker]()
+* [Installing locally with Docker Compose](#installing-locally-with-docker-compose)
+* [Installing locally without Docker](#installing-locally-manual)
 
 ### Installing locally (with Docker Compose)
 
