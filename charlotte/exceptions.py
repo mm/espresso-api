@@ -17,5 +17,5 @@ class InvalidUsage(Exception):
 
     def to_dict(self):
         response = dict(self.payload or ())
-        response['error'] = self.message
+        response['message'] = self.message
         return response

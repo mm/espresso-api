@@ -22,7 +22,11 @@ Choose your adventure!
 
 2. Ensure [Docker](https://www.docker.com/) is running (and Docker Compose [is installed](https://docs.docker.com/compose/install/))
 
-3. Make a copy of the `dev/environment.example` file as `dev/environment`: `cp dev/environment.example dev/environment`
+3. Make a copy of the `dev/environment.example` file as `dev/environment`:
+
+    ```console
+    cp dev/environment.example dev/environment
+    ```
 
 4. Update environment variables in `dev/environment`: Update `an_insecure_password` to something a little more randomly generated. This will allow you to connect to the DB locally if you're interested in how it updates.
 

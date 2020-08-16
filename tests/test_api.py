@@ -4,10 +4,8 @@ import os
 import tempfile
 import pytest
 
-from flask import url_for
-
 from charlotte import create_app
-from charlotte.model import db
+from charlotte.model import db, Link
 
 VALID_API_KEY = '189f8f7b42944ba7bca361666c9fdded'
 
@@ -49,7 +47,7 @@ def test_invalid_pagination_for_links(client, url):
     """
     rv = client.get(url, headers={'x-api-key': VALID_API_KEY})
     json_data = rv.get_json()
-    assert json_data['error'] == "The page and per_page parameters must be integers"
+    assert json_data['message'] == "The page and per_page parameters must be integers"
 
 
 def test_links_response(client):
@@ -114,6 +112,38 @@ def test_link_post(client):
     assert rv.headers['Location'] == 'http://localhost/api/links/'+str(new_id)
 
 
+@pytest.mark.parametrize(('url', 'title'), (
+    ('https://www.microsoft.com/en-ca/', 'Microsoft - Official Home Page'),
+    ('https://github.com', 'The world’s leading software development platform · GitHub')
+))
+def test_link_post_infer_title(client, url, title):
+    """POSTing a link without a title should cause the title of the URL to be
+    inferred.
+    """
+    rv = client.post('/api/links', headers={'x-api-key': VALID_API_KEY}, json={'url': url})
+    json_data = rv.get_json()
+    assert rv.status_code == 201
+    assert json_data['title'] == title
+
+
+@pytest.mark.parametrize(('payload', 'status_code', 'validation_error'), (
+    ({}, 422, 'Field may not be null.'),
+    ({'url': 'frifh123'}, 422, 'Not a valid URL.'),
+    ({'url': 'google'}, 422, 'Not a valid URL.'),
+    ({'url': 'google.com'}, 422, 'Not a valid URL.')
+))
+def test_link_post_invalid_url(client, payload, status_code, validation_error):
+    """POSTing an empty JSON payload, or an invalid URL should yield a 422, and
+    a descriptive validation error in issues.url.
+    """
+    rv = client.post('/api/links', headers={'x-api-key': VALID_API_KEY}, json=payload)
+    json_data = rv.get_json()
+
+    assert rv.status_code == status_code
+    print(json_data['issues'])
+    assert validation_error in json_data['issues']['url']
+
+
 @pytest.mark.parametrize(('url', 'status_code', 'message'), (
     ('/api/links/6', 200, 'Link with ID 6 deleted successfully'),
     ('/api/links/100', 404, 'Requested resource was not found in the database')
@@ -126,4 +156,29 @@ def test_link_delete(client, url, status_code, message):
     assert rv.status_code == status_code
     assert rv.get_json().get('message') == message
 
-    
+
+@pytest.mark.parametrize(('id', 'payload', 'status_code', 'message'), (
+    (1, {'read': True}, 200, 'Link with ID 1 updated successfully'),
+    (2, {'read': True, 'title': 'Updated title'}, 200, 'Link with ID 2 updated successfully'),
+    (2, None, 400, 'This method expects valid JSON data as the request body'),
+    (2, {}, 200, 'Link with ID 2 updated successfully'),
+    (7, {'read': True}, 404, 'Requested resource was not found in the database'),
+    (3, {'url': 'hryufhryf'}, 422, 'The submitted data failed validation checks'),
+    (3, {'url': None}, 422, 'The submitted data failed validation checks')
+))
+def test_link_patch(app, client, id, payload, status_code, message):
+    """Sending a PATCH request with a valid body and on a valid link should
+    return a 200 if successful, and a message notifying the user that it was successful.
+    An empty JSON payload should still yield a 200 (nothing was changed)
+    """
+    rv = client.patch('/api/links/'+str(id), headers={'x-api-key': VALID_API_KEY}, json=payload)
+
+    assert rv.status_code == status_code
+    assert rv.get_json().get('message') == message
+
+    # Check whether our underlying object is actually updated (if we sent something valid)
+    if rv.status_code == 200:
+        with app.app_context():
+            updated_link = Link.query.get(id)
+            for key, value in payload.items():
+                assert getattr(updated_link, key) == value
