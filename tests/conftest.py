@@ -26,9 +26,9 @@ def app():
     # Set up a temporary file pointer and use the URL to set
     # the location of our temporary DB:
     db_fd, db_url = tempfile.mkstemp()
-    os.environ['DATABASE_URL'] = 'sqlite:///'+db_url
-    os.environ['FLASK_APP'] = 'charlotte'
-    app = create_app('testing')
+    app = create_app('charlotte.config.TestConfig', test_config={
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///'+db_url
+    })
 
     with app.app_context():
         # Create all tables in the model:

@@ -1,1 +1,1 @@
-web: gunicorn "charlotte:create_app('prod')"
+web: gunicorn "charlotte:create_app('charlotte.config.ProdConfig')"
