@@ -13,35 +13,8 @@ This will get you started on getting Charlotte installed locally to play with th
 
 Choose your adventure! 
 
-* [Installing locally with Docker Compose](#installing-locally-with-docker-compose)
 * [Installing locally without Docker](#installing-locally-manual)
-
-### Installing locally (with Docker Compose)
-
-1. Clone this repository in the directory of your choosing: `git clone https://github.com/mm/charlotte-api.git`
-
-2. Ensure [Docker](https://www.docker.com/) is running (and Docker Compose [is installed](https://docs.docker.com/compose/install/))
-
-3. Make a copy of the `dev/environment.example` file as `dev/environment`:
-
-    ```console
-    cp dev/environment.example dev/environment
-    ```
-
-4. Update environment variables in `dev/environment`: Update `an_insecure_password` to something a little more randomly generated. This will allow you to connect to the DB locally if you're interested in how it updates.
-
-5. Build and run Charlotte! `docker-compose up --build`
-
-6. Once everything's up and running, use the CLI to initialize the database and create a new user/API key (make note of this key as we'll be making requests with it soon!):
-
-    ```console
-    docker-compose run web flask admin create_db
-    docker-compose run web flask admin create_user
-    ```
-
-7. You should be able to access the API at `http://127.0.0.1:8000`. Once you're done, stop any running containers with `docker-compose down`. 
-
-8. When running in the future, you don't need to re-initialize the database, simply run `docker-compose up` in the project directory and you're ready to go!
+* [Installing locally with Docker Compose](#installing-locally-with-docker-compose)
 
 ### Installing locally (Manual)
 
@@ -73,6 +46,57 @@ Choose your adventure!
     ```
 
 5. Start up the API with the built-in Flask development server: `flask run`.
+
+### Installing locally (with Docker Compose)
+
+1. Clone this repository in the directory of your choosing: `git clone https://github.com/mm/charlotte-api.git`
+
+2. Ensure [Docker](https://www.docker.com/) is running (and Docker Compose [is installed](https://docs.docker.com/compose/install/))
+
+3. Make a copy of the `dev/environment.example` file as `dev/environment`:
+
+    ```console
+    cp dev/environment.example dev/environment
+    ```
+
+4. Update environment variables in `dev/environment`: Update `an_insecure_password` to something a little more randomly generated. This will allow you to connect to the DB locally if you're interested in how it updates.
+
+5. Build and run Charlotte! `docker-compose up --build`
+
+6. Once everything's up and running, use the CLI to initialize the database and create a new user/API key (make note of this key as we'll be making requests with it soon!):
+
+    ```console
+    docker-compose run web flask admin create_db
+    docker-compose run web flask admin create_user
+    ```
+
+7. You should be able to access the API at `http://127.0.0.1:8000`. Once you're done, stop any running containers with `docker-compose down`. 
+
+8. When running in the future, you don't need to re-initialize the database, simply run `docker-compose up` in the project directory and you're ready to go!
+
+## Deploying to Heroku
+
+I deploy Charlotte to Heroku for my own use. Here's how it can be done:
+
+1. Sign up for Heroku if you haven't already. Set up a new app and [provision the Heroku Postgres addon](https://devcenter.heroku.com/articles/heroku-postgresql#provisioning-heroku-postgres) for it. When you deploy this app to Heroku, the `DATABASE_URL` environment variable will be used automatically to give the correct URL for the Heroku Postgres instance (no need to copy it anywhere)
+
+2. Ensure that the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) is installed.
+
+3. If you haven't logged in to the CLI before, run `heroku login` first in your console. Then, add the Heroku remote to your repository and push to that remote:
+
+    ```console
+    heroku git:remote -a YOUR_APP_NAME_ON_HEROKU_HERE
+    git push heroku master
+    ```
+
+4. If all goes well, you should now be able to initialize the database and create your API key remotely using the CLI!
+
+    ```console
+    $ heroku run flask admin create_db
+    $ heroku run flask admin create_user
+    ```
+
+Enjoy :)
 
 ## API Documentation
 
@@ -219,16 +243,16 @@ Retrieves a link from the database with a given ID, or returns a `404` if the li
 
     **Response body**:
 
-        ```json
-        {
-            "date_added": "2020-08-15 10:31 PM ", 
-            "id": 30, 
-            "read": false, 
-            "title": "Apple", 
-            "url": "https://apple.com"
-        }
-        ```
-        Note that `date_added` is in UTC.
+    ```json
+    {
+        "date_added": "2020-08-15 10:31 PM ", 
+        "id": 30, 
+        "read": false, 
+        "title": "Apple", 
+        "url": "https://apple.com"
+    }
+    ```
+    Note that `date_added` is in UTC.
 
 #### PATCH /api/links/:id
 

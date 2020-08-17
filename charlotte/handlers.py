@@ -12,6 +12,7 @@ def handle_not_found(error):
     return jsonify(message="Requested resource was not found in the database"), 404
 
 def handle_server_error(error):
+    current_app.logger.error(f'500 Error Triggered: {error}')
     return jsonify(message="An unknown error while accessing resource"), 500
 
 def handle_sqa_general(error):
