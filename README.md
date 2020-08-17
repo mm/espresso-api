@@ -1,8 +1,28 @@
-# Charlotte (API)
+# 🕷 Charlotte (API)
 
-This is the back-end that powers Charlotte, my personal link-saving tool for saving websites to read later, named after [quite an amazing spider](https://en.wikipedia.org/wiki/Charlotte%27s_Web). It uses PostgreSQL to store URLs to read, and contains a REST API (built with Flask) that allows other applications to add/modify links easily (this allows me to add [Shortcuts](https://apps.apple.com/us/app/shortcuts/id915249334) actions to capture URLs quickly from any application with a share sheet, or create a send-to-email URL saving service).
+This is the backend that powers Charlotte, my personal link-saving tool for saving websites to read later, named after [a pretty awesome spider](https://en.wikipedia.org/wiki/Charlotte%27s_Web). It uses PostgreSQL to store URLs to read, and contains a REST API (built with Flask) that allows other applications to add/modify links easily (this allows me to add [Shortcuts](https://apps.apple.com/us/app/shortcuts/id915249334) actions to capture URLs quickly from any application with a share sheet, or create a send-to-email URL saving service).
 
-## Getting started
+# Table of Contents
+
+* [Getting started](#getting-started)
+    * [Prerequisites](#prerequisites)
+    * [Installing locally (Manual)](#installing-locally-manual)
+    * [Installing locally with Docker Compose](#installing-locally-with-docker-compose)
+    * [Deploying to Heroku](#deploying-to-heroku)
+    * [Running unit tests](#running-unit-tests)
+* [API Documentation](#api-documentation)
+    * [Authorization](#authorization)
+    * [Getting user info: /api/user](#getting-user-info-apiuser)
+        * [GET /api/user](#get-apiuser)
+    * [Retrieving or adding links: /api/links](#retrieving-or-adding-links-apilinks)
+        * [GET /api/links](#get-apilinks)
+        * [POST /api/links](#post-apilinks)
+    * [Retrieving, updating or deleting links: /api/links/:id](#retrieving-updating-or-deleting-links-apilinksid)
+        * [GET /api/links/:id](#get-apilinksid)
+        * [PATCH /api/links/:id](#patch-apilinksid)
+        * [DELETE /api/links/:id](#delete-apilinksid)
+
+## 🚀 Getting started
 
 This will get you started on getting Charlotte installed locally to play with the API.
 
@@ -74,7 +94,7 @@ Choose your adventure!
 
 8. When running in the future, you don't need to re-initialize the database, simply run `docker-compose up` in the project directory and you're ready to go!
 
-## Deploying to Heroku
+### Deploying to Heroku
 
 I deploy Charlotte to Heroku for my own use. Here's how it can be done:
 
@@ -98,7 +118,15 @@ I deploy Charlotte to Heroku for my own use. Here's how it can be done:
 
 Enjoy :)
 
-## API Documentation
+### Running unit tests
+
+This application uses [pytest](https://docs.pytest.org/en/stable/) to run unit tests. Tests run against a SQLite database instead of a Postgres one. To run tests, at the project root start up pytest:
+
+```console
+$ pytest -v
+```
+
+## 📒 API Documentation
 
 ### Authorization
 
