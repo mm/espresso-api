@@ -1,6 +1,6 @@
 # Charlotte (API)
 
-This is the back-end that powers Charlotte, my personal link-saving tool for saving websites to read later. It uses PostgreSQL to store URLs to read, and contains a REST API (built with Flask) that allows other applications to add/modify links easily (this allows me to add [Shortcuts](https://apps.apple.com/us/app/shortcuts/id915249334) actions to capture URLs quickly from any application with a share sheet, or create a send-to-email URL saving service).
+This is the back-end that powers Charlotte, my personal link-saving tool for saving websites to read later, named after [quite an amazing spider](https://en.wikipedia.org/wiki/Charlotte%27s_Web). It uses PostgreSQL to store URLs to read, and contains a REST API (built with Flask) that allows other applications to add/modify links easily (this allows me to add [Shortcuts](https://apps.apple.com/us/app/shortcuts/id915249334) actions to capture URLs quickly from any application with a share sheet, or create a send-to-email URL saving service).
 
 ## Getting started
 
@@ -23,10 +23,10 @@ Choose your adventure!
 2. Set up and activate a virtual environment to keep dependencies for this project separate, then install requirements. For me on macOS it looks like this:
 
     ```console
-    cd charlotte-api
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
+    $ cd charlotte-api
+    $ python3 -m venv venv
+    $ source venv/bin/activate
+    $ pip install -r requirements.txt
     ```
 
 3. Create a `.env` file in the project's root directory with the following contents:
@@ -41,8 +41,8 @@ Choose your adventure!
 4. Use the CLI to initialize the database and create a new user/API key (make note of this key as we'll be making requests with it soon!):
 
     ```console
-    flask admin create_db
-    flask admin create_user
+    $ flask admin create_db
+    $ flask admin create_user
     ```
 
 5. Start up the API with the built-in Flask development server: `flask run`.
@@ -56,7 +56,7 @@ Choose your adventure!
 3. Make a copy of the `dev/environment.example` file as `dev/environment`:
 
     ```console
-    cp dev/environment.example dev/environment
+    $ cp dev/environment.example dev/environment
     ```
 
 4. Update environment variables in `dev/environment`: Update `an_insecure_password` to something a little more randomly generated. This will allow you to connect to the DB locally if you're interested in how it updates.
@@ -66,8 +66,8 @@ Choose your adventure!
 6. Once everything's up and running, use the CLI to initialize the database and create a new user/API key (make note of this key as we'll be making requests with it soon!):
 
     ```console
-    docker-compose run web flask admin create_db
-    docker-compose run web flask admin create_user
+    $ docker-compose run web flask admin create_db
+    $ docker-compose run web flask admin create_user
     ```
 
 7. You should be able to access the API at `http://127.0.0.1:8000`. Once you're done, stop any running containers with `docker-compose down`. 
@@ -85,8 +85,8 @@ I deploy Charlotte to Heroku for my own use. Here's how it can be done:
 3. If you haven't logged in to the CLI before, run `heroku login` first in your console. Then, add the Heroku remote to your repository and push to that remote:
 
     ```console
-    heroku git:remote -a YOUR_APP_NAME_ON_HEROKU_HERE
-    git push heroku master
+    $ heroku git:remote -a YOUR_APP_NAME_ON_HEROKU_HERE
+    $ git push heroku master
     ```
 
 4. If all goes well, you should now be able to initialize the database and create your API key remotely using the CLI!
