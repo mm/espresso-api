@@ -150,14 +150,14 @@ Returns a list of links belonging to the current user. By default, this will pag
 
 * **Example successful response:**
 
-    * **Code**: 200
+    * **Code**: `200`
     * **Response body:**
 
         ```json
         {
             "links": [
                 {
-                    "date_added": "2020-08-03 02:52 PM ", 
+                    "date_added": "2020-08-03 14:52", 
                     "id": 28, 
                     "read": false, 
                     "title": "Tutorial: VPN on Demand with Siri, Shortcuts, Python, AWS EC2 & Lambda - DEV", 
@@ -189,12 +189,12 @@ Adds a new link to the database. If a title wasn't provided, the backend attempt
 
 * **Example successful response:**:
 
-    * **Code:** 201
+    * **Code:** `201`
     * **Response body:**
 
         ```json
         {
-            "date_added": "2020-08-15 10:31 PM ", 
+            "date_added": "2020-08-15 22:31", 
             "id": 30, 
             "read": false, 
             "title": "Apple", 
@@ -209,7 +209,7 @@ Adds a new link to the database. If a title wasn't provided, the backend attempt
 
     Returned if, for example, the URL is invalid.
 
-    * **Code:** 422
+    * **Code:** `422`
     * **Response body:**
 
         ```json
@@ -239,13 +239,13 @@ Retrieves a link from the database with a given ID, or returns a `404` if the li
 
     `GET /api/links/30`
 
-    **Code**: 200
+    **Code**: `200`
 
     **Response body**:
 
     ```json
     {
-        "date_added": "2020-08-15 10:31 PM ", 
+        "date_added": "2020-08-15 22:31", 
         "id": 30, 
         "read": false, 
         "title": "Apple", 
@@ -270,7 +270,7 @@ Updates a field in the database for a link with a given ID. Returns a `404` if t
     {"read": true }
     ```
 
-    **Code:** 200
+    **Code:** `200`
     **Response body:**
 
     ```json
@@ -287,7 +287,7 @@ Deletes an entry in the database for a link with a given ID. Returns a `404` if 
 
     `DELETE /api/links/30`
 
-    **Code:** 200
+    **Code:** `200`
     **Response body:**
 
     ```json

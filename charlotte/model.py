@@ -79,7 +79,7 @@ class UserSchema(Schema):
 
 class LinkSchema(Schema):
     id = fields.Int(strict=True, required=True, dump_only=True)
-    date_added = fields.DateTime(format="%Y-%m-%d %I:%M %p %Z")
+    date_added = fields.DateTime(format="%Y-%m-%d %H:%M")
     url = fields.URL(required=True, relative=False, require_tld=True)
     user_id = fields.Int(strict=True, required=True, load_only=True)
     title = fields.Str(allow_none=True)

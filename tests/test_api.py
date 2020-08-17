@@ -88,7 +88,7 @@ def test_link_get(client):
     rv = client.get('/api/links/2', headers={'x-api-key': VALID_API_KEY})
     json_data = rv.get_json()
     expected_response = {
-        "date_added": "2020-08-02 09:30 AM ", 
+        "date_added": "2020-08-02 09:30", 
         "id": 2, 
         "read": False, 
         "title": "PostgreSQL: Documentation", 
