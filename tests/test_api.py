@@ -1,10 +1,7 @@
 """Tests on all Charlotte API routes."""
 
-import os
-import tempfile
 import pytest
 
-from charlotte import create_app
 from charlotte.model import db, Link
 
 VALID_API_KEY = '189f8f7b42944ba7bca361666c9fdded'

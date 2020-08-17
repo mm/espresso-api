@@ -2,7 +2,7 @@
 
 This is the backend that powers Charlotte, my personal link-saving tool for saving websites to read later, named after [a pretty awesome spider](https://en.wikipedia.org/wiki/Charlotte%27s_Web). It uses PostgreSQL to store URLs to read, and contains a REST API (built with Flask) that allows other applications to add/modify links easily (this allows me to add [Shortcuts](https://apps.apple.com/us/app/shortcuts/id915249334) actions to capture URLs quickly from any application with a share sheet, or create a send-to-email URL saving service).
 
-# Table of Contents
+## Table of Contents
 
 * [Getting started](#getting-started)
     * [Prerequisites](#prerequisites)
@@ -202,7 +202,7 @@ Returns a list of links belonging to the current user. By default, this will pag
 
 #### POST /api/links
 
-Adds a new link to the database. If a title wasn't provided, the backend attempts to infer one from the `<title>` element of the URL passed in. A JSON representation of the link will be returned in the response, with a `201` code if successful.
+Adds a new link to the database. If a title wasn't provided, the backend attempts to infer one from the `<title>` element of the URL passed in. A JSON representation of the link will be returned in the response, with a `201` code if successful. URLs need to have a scheme specified as well as a TLD.
 
 * **Request body**: Must be valid JSON of this form:
 
@@ -256,7 +256,7 @@ Adds a new link to the database. If a title wasn't provided, the backend attempt
 Allows manipulation or retrieval of a given link stored in the database. If the link at the ID specified is not owned by the current user, a `403 Forbidden` is returned. 
 
 * **URL**: `/api/links/:id`
-* **Required**: `:id (integer)`
+* **Required**: `:id [integer]`
 * **Method**: `GET, PATCH, DELETE`
 
 #### GET /api/links/:id
