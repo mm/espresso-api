@@ -4,7 +4,7 @@ whether an API key matches the hash stored on record for a user.
 
 from functools import wraps
 from typing import NamedTuple
-from uuid import uuid4
+from secrets import token_hex, compare_digest
 from hashlib import sha256
 from flask import request, jsonify
 from charlotte.model import User
@@ -19,7 +19,7 @@ def generate_api_key() -> api_pair:
     to the database.
     """
 
-    api_key = str(uuid4()).replace('-', '')
+    api_key = str(token_hex(32))
     hash_value = sha256(api_key.encode('utf-8')).hexdigest()
     return api_pair(api_key, hash_value)
 
@@ -45,7 +45,7 @@ def validate_api_key(user_id: int, api_key: str) -> bool:
         print("User fetching failed.")
         return False
     
-    return user_hash == submitted_hash
+    return compare_digest(submitted_hash, user_hash)
 
 
 def user_for_api_key(api_key: str) -> User:

@@ -4,7 +4,7 @@ import pytest
 
 from charlotte.model import db, Link
 
-VALID_API_KEY = '189f8f7b42944ba7bca361666c9fdded'
+VALID_API_KEY = '204764892964d5931312b50f280a0112286f4ebb07111a65f7a1cb238437322d'
 
 @pytest.mark.parametrize(('url', 'key', 'status_code'), (
     ('/api/user', '', 403),
