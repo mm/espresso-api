@@ -4,14 +4,14 @@ This is the backend that powers Charlotte, my personal link-saving tool for savi
 
 ## Table of Contents
 
-* [Getting started](#getting-started)
+* [Getting started](#-getting-started)
     * [Prerequisites](#prerequisites)
     * [Installing locally (Manual)](#installing-locally-manual)
     * [Installing locally with Docker Compose](#installing-locally-with-docker-compose)
     * [Deploying to Heroku](#deploying-to-heroku)
     * [Running unit tests](#running-unit-tests)
-* [CLI Reference](#cli-reference)
-* [API Documentation](#api-documentation)
+* [CLI Reference](#-cli-reference)
+* [API Documentation](#-api-documentation)
     * [Authorization](#authorization)
     * [Getting user info: /api/user](#getting-user-info-apiuser)
         * [GET /api/user](#get-apiuser)
