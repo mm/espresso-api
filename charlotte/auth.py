@@ -13,13 +13,13 @@ api_pair = NamedTuple('KeyDetails', [('api_key', str), ('hashed_key', str)])
 
 
 def generate_api_key() -> api_pair:
-    """Generates a random UUID to use as an API key.
+    """Generates a random token to use as an API key.
     Returns a named tuple containing the key (`api_key`) and a hash
     value (`hashed_key`). The hashed version is what is saved
     to the database.
     """
 
-    api_key = str(token_hex(32))
+    api_key = str(token_hex(32))  # 32 bytes of randomness
     hash_value = sha256(api_key.encode('utf-8')).hexdigest()
     return api_pair(api_key, hash_value)
 
@@ -33,6 +33,8 @@ def validate_api_key(user_id: int, api_key: str) -> bool:
     - user_id: An integer representing the user in the database
     - api_key: The key to check against
     """
+    if (not user_id) or (not api_key):
+        return False
 
     # Compute SHA-256 hash of API key to check:
     submitted_hash = sha256(api_key.encode('utf-8')).hexdigest()

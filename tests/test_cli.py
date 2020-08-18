@@ -1,7 +1,9 @@
 """Tests on the Charlotte CLI."""
 
 import pytest
-from charlotte.cli import create_db, create_user
+from charlotte.cli import (
+    create_db, create_user, drop_tables, rotate_user_key
+)
 from charlotte.auth import validate_api_key
 from charlotte.model import db
 
@@ -37,3 +39,24 @@ def test_user_creation(app, runner):
     # Can our user actually log in with the API key given?
     with app.app_context():
         assert validate_api_key(output_id, output_key)
+
+def test_rotate_user_key(app, runner):
+    """Tests the ability to rotate an API key from the CLI.
+    """
+    result = runner.invoke(rotate_user_key, input='1')
+    output_lines = result.output.split('\n')
+
+    new_key = output_lines[2].split('New API key is: ')[1]
+    # Does the new key actually work?
+    with app.app_context():
+        assert validate_api_key(1, new_key)
+
+
+def test_table_drop(app, runner):
+    """Tests the ability to drop tables from the CLI.
+    """
+    result = runner.invoke(drop_tables, input="y")
+
+    with app.app_context():
+        assert not db.engine.has_table('link')
+        assert not db.engine.has_table('user')

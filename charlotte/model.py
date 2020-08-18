@@ -18,7 +18,7 @@ class User(db.Model):
     __tablename__ = 'user'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=True)
     api_key = db.Column(db.String(512), nullable=False)
     links = db.relationship('Link', backref='user', lazy=True)
 
@@ -72,7 +72,7 @@ class Link(db.Model):
 
 class UserSchema(Schema):
     id = fields.Int(strict=True, required=True)
-    name = fields.Str(required=True)
+    name = fields.Str()
     # Setting api_key as load_only ensures any dumps don't contain it:
     api_key = fields.Str(required=True, load_only=True)
 
