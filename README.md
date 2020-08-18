@@ -318,6 +318,7 @@ Updates a field in the database for a link with a given ID. Returns a `404` if t
     ```
 
     **Code:** `200`
+    
     **Response body:**
 
     ```json
@@ -335,6 +336,7 @@ Deletes an entry in the database for a link with a given ID. Returns a `404` if 
     `DELETE /api/links/30`
 
     **Code:** `200`
+
     **Response body:**
 
     ```json
