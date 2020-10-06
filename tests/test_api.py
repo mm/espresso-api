@@ -111,7 +111,7 @@ def test_link_post(client):
 
 @pytest.mark.parametrize(('url', 'title'), (
     ('https://www.microsoft.com/en-ca/', 'Microsoft - Official Home Page'),
-    ('https://github.com', 'The world’s leading software development platform · GitHub')
+    ('https://github.com', 'GitHub: Where the world builds software · GitHub')
 ))
 def test_link_post_infer_title(client, url, title):
     """POSTing a link without a title should cause the title of the URL to be
