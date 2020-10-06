@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_limiter import Limiter
+from flask_cors import CORS
 from flask_limiter.util import get_remote_address
 from dotenv import find_dotenv, load_dotenv
 from charlotte.api import api_bp
@@ -35,6 +36,8 @@ def create_app(config='charlotte.config.DevConfig', test_config=None):
     # Set up rate limiting on all API routes:
     limiter = Limiter(app=app, key_func=get_remote_address, default_limits=["5 per second", "150 per day"])
     limiter.limit(api_bp)
+    # Enable CORS on all endpoints:
+    CORS(app)
     # Register all of our view functions with the app:
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(admin_bp)
