@@ -30,7 +30,7 @@ def test_user(client):
     json_data = rv.get_json()
     assert rv.status_code == 200
     # On set-up the user should have 6 links (check `seed_link.sql`)
-    assert json_data == {'id': 1, 'links': 6, 'name': 'Tester'}
+    assert json_data == {'id': 1, 'links': 8, 'name': 'Tester'}
 
 
 @pytest.mark.parametrize('url', [
@@ -57,7 +57,7 @@ def test_links_response(client):
     assert json_data['next_page'] is None
     assert json_data['per_page'] == 20
     assert json_data['page'] == 1
-    assert json_data['total_links'] == len(json_data['links'])
+    assert json_data['total_links'] == 8
     assert json_data['total_pages'] == 1
 
 
@@ -76,6 +76,19 @@ def test_pagination(client, url, page, per_page, next_page, total_pages):
     assert json_data['per_page'] == per_page
     assert json_data['next_page'] == next_page
     assert json_data['total_pages'] == total_pages
+
+@pytest.mark.parametrize(('url', 'number_of_links'), (
+    ('/api/links?archived=0', 6),
+    ('/api/links?archived=1', 2)
+))
+def test_archive_switch(client, url, number_of_links):
+    """Passing `archived=1` as a URL parameter should result in
+    only archived (read) links being returned, whereas `archived=0`
+    should result in only unread links being returned.
+    """
+    rv = client.get(url, headers={'x-api-key': VALID_API_KEY})
+    json_data = rv.get_json()
+    assert len(json_data['links']) == number_of_links
 
 
 def test_link_get(client):
@@ -159,7 +172,7 @@ def test_link_delete(client, url, status_code, message):
     (2, {'read': True, 'title': 'Updated title'}, 200, 'Link with ID 2 updated successfully'),
     (2, None, 400, 'This method expects valid JSON data as the request body'),
     (2, {}, 200, 'Link with ID 2 updated successfully'),
-    (7, {'read': True}, 404, 'Requested resource was not found in the database'),
+    (10, {'read': True}, 404, 'Requested resource was not found in the database'),
     (3, {'url': 'hryufhryf'}, 422, 'The submitted data failed validation checks'),
     (3, {'url': None}, 422, 'The submitted data failed validation checks')
 ))

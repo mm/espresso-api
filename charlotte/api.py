@@ -51,7 +51,15 @@ def links(current_user=None):
         except ValueError:
             raise InvalidUsage(message="The page and per_page parameters must be integers")
 
-        link_query = Link.query.filter(Link.user_id==current_user.id).order_by(Link.date_added.desc()).paginate(
+        archived_param = int(request.args.get('archived', 0))
+        if archived_param not in {0, 1}:
+            raise InvalidUsage(message="The archived parameter must be either 0 or 1 (default: 0)")
+
+        link_query = Link.query.filter(
+            Link.user_id==current_user.id
+        ).filter(
+            Link.read==bool(archived_param)
+        ).order_by(Link.date_added.desc()).paginate(
             page=page, per_page=per_page
         )
         # Here, `items` is the Link objects for the current page:
