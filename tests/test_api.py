@@ -77,14 +77,16 @@ def test_pagination(client, url, page, per_page, next_page, total_pages):
     assert json_data['next_page'] == next_page
     assert json_data['total_pages'] == total_pages
 
+
 @pytest.mark.parametrize(('url', 'number_of_links'), (
-    ('/api/links?archived=0', 6),
-    ('/api/links?archived=1', 2)
+    ('/api/links?show=all', 8),
+    ('/api/links', 6),
+    ('/api/links?show=read', 2),
+    ('/api/links?show=unread', 6)
 ))
-def test_archive_switch(client, url, number_of_links):
-    """Passing `archived=1` as a URL parameter should result in
-    only archived (read) links being returned, whereas `archived=0`
-    should result in only unread links being returned.
+def test_show_switch(client, url, number_of_links):
+    """The `show` parameter should control whether unread, read (default) or all
+    links are shown.
     """
     rv = client.get(url, headers={'x-api-key': VALID_API_KEY})
     json_data = rv.get_json()

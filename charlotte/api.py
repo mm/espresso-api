@@ -40,7 +40,9 @@ def user(current_user=None):
 def links(current_user=None):
     """Returns a list of links for the current user (and pointers
     to another page of links), or allows for the creation of new
-    links (data received in JSON payload)
+    links (data received in JSON payload). The `show` URL param controls
+    whether archived links are returned, and can be one of `all`, `read`,
+    or `unread` (default "unread")
     """
     schema = LinkSchema()
     if request.method == 'GET':
@@ -51,17 +53,27 @@ def links(current_user=None):
         except ValueError:
             raise InvalidUsage(message="The page and per_page parameters must be integers")
 
-        archived_param = int(request.args.get('archived', 0))
-        if archived_param not in {0, 1}:
-            raise InvalidUsage(message="The archived parameter must be either 0 or 1 (default: 0)")
+        # Check what the user wants to see based on the "show" URL param:
+        # "unread": Show only unread articles (default)
+        # "read": Show only read articles
+        # "all": Show all articles
+        show_param = request.args.get('show', 'unread')
+        if show_param not in ('unread', 'read', 'all'):
+            raise InvalidUsage(message="The show parameter must be either unread, read or all.")
 
-        link_query = Link.query.filter(
-            Link.user_id==current_user.id
-        ).filter(
-            Link.read==bool(archived_param)
-        ).order_by(Link.date_added.desc()).paginate(
-            page=page, per_page=per_page
-        )
+        link_query = Link.query.filter(Link.user_id==current_user.id)
+        # By default, the query returns all links regardless of read status. If the request
+        # specifies otherwise, add this:
+        if show_param == 'read':
+            link_query = link_query.filter(Link.read==True)
+        elif show_param == 'unread':
+            link_query = link_query.filter(Link.read==False)
+
+        # Paginate our results:
+        link_query = link_query.order_by(
+            Link.date_added.desc()
+        ).paginate(page=page, per_page=per_page)
+
         # Here, `items` is the Link objects for the current page:
         results = schema.dump(link_query.items, many=True)
         return jsonify(
@@ -73,7 +85,7 @@ def links(current_user=None):
             links=results
         )
 
-    # Otherwise, we're creating a new link
+    # Otherwise, we're creating a new link (POST):
     # Collect information via the JSON body of the request
     body = request.get_json()
     if body is None:
