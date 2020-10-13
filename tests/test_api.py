@@ -85,7 +85,7 @@ def test_pagination(client, url, page, per_page, next_page, total_pages):
     ('/api/links?show=unread', 6)
 ))
 def test_show_switch(client, url, number_of_links):
-    """The `show` parameter should control whether unread, read (default) or all
+    """The `show` parameter should control whether unread (default), read or all
     links are shown.
     """
     rv = client.get(url, headers={'x-api-key': VALID_API_KEY})
