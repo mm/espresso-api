@@ -194,7 +194,10 @@ Returns a list of links belonging to the current user. By default, this will pag
 
     * `per_page=[integer]`: The number of links to show per page (default 20)
     * `page=[integer]`: The page number of links to retrieve (will yield a 404 if out of bounds)
-    * `archived=[integer{0,1}]`: Whether to display unread or archived (read) links (defaults to 0, showing unread links only)
+    * `show=[string{all, read, unread}]`: Controls whether unread, read or all links are returned:
+        * `unread` (Default): Returns only links which haven't been marked as read yet
+        * `read`: Returns only links which have been marked as read
+        * `all`: Returns all links regardless of read status
 
 * **Example successful response:**
 
