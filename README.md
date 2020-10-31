@@ -223,6 +223,8 @@ Returns a list of links belonging to the current user. By default, this will pag
         }
         ```
 
+* Note that `total_links` will always reflect the total number of links the user has saved, regardless of the value passed to the `show` parameter.
+
 #### POST /api/links
 
 Adds a new link to the database. If a title wasn't provided, the backend attempts to infer one from the `<title>` element of the URL passed in. A JSON representation of the link will be returned in the response, with a `201` code if successful. URLs need to have a scheme specified as well as a TLD.
