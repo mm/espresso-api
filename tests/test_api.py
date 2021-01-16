@@ -104,7 +104,8 @@ def test_link_get(client):
         "id": 2, 
         "read": False, 
         "title": "PostgreSQL: Documentation", 
-        "url": "https://www.postgresql.org/docs/"
+        "url": "https://www.postgresql.org/docs/",
+        "category": None
     }
     assert json_data == expected_response
 
