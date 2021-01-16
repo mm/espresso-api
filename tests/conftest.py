@@ -36,9 +36,9 @@ def app():
 @pytest.fixture
 def seed_data(app):
     with app.app_context():
-        user_id = seed_user()
+        user_id, api_key = seed_user()
         seed_links(user_id)
-    return user_id
+    return user_id, api_key
 
 
 @pytest.fixture
