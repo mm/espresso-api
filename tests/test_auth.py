@@ -2,7 +2,7 @@
 
 from hashlib import sha256
 import pytest
-import charlotte.auth as auth
+import src.auth as auth
 
 # We know this key in advance because of how we seeded the database tables
 VALID_KEY = '204764892964d5931312b50f280a0112286f4ebb07111a65f7a1cb238437322d'

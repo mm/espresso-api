@@ -5,7 +5,7 @@ services:
         restart: always
         build: .
         depends_on: db
-        command: gunicorn --bind 0.0.0.0:8000 --reload "charlotte:create_app()"
+        command: gunicorn --bind 0.0.0.0:8000 --reload "src:create_app()"
         ports:
             - "8000:8000"
         links:

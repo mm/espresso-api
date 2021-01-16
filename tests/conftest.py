@@ -5,8 +5,8 @@ import os
 import tempfile
 
 import pytest
-from charlotte import create_app
-from charlotte.model import db
+from src import create_app
+from src.model import db
 
 # Seed the database with a user and one link associated to them to start out:
 # (Also, SQLite complains when you execute multiple statements in one file so
@@ -26,7 +26,7 @@ def app():
     # Set up a temporary file pointer and use the URL to set
     # the location of our temporary DB:
     db_fd, db_url = tempfile.mkstemp()
-    app = create_app('charlotte.config.TestConfig', test_config={
+    app = create_app('src.config.TestConfig', test_config={
         'SQLALCHEMY_DATABASE_URI': 'sqlite:///'+db_url
     })
 

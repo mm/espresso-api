@@ -2,7 +2,7 @@
 
 import pytest
 
-from charlotte.model import db, Link
+from src.model import db, Link
 
 VALID_API_KEY = '204764892964d5931312b50f280a0112286f4ebb07111a65f7a1cb238437322d'
 

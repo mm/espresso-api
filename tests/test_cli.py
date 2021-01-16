@@ -1,11 +1,11 @@
 """Tests on the Charlotte CLI."""
 
 import pytest
-from charlotte.cli import (
+from src.cli import (
     create_db, create_user, drop_tables, rotate_user_key
 )
-from charlotte.auth import validate_api_key
-from charlotte.model import db
+from src.auth import validate_api_key
+from src.model import db
 
 def test_database_creation(app, runner):
     """Tests the ability to create table structure from the CLI.

@@ -3,12 +3,15 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_limiter import Limiter
 from flask_cors import CORS
+from flask_migrate import Migrate
 from flask_limiter.util import get_remote_address
 from dotenv import find_dotenv, load_dotenv
-from charlotte.api import api_bp
-from charlotte.cli import admin_bp
+from .api import api_bp
+from .cli import admin_bp
 
-def create_app(config='charlotte.config.DevConfig', test_config=None):
+migrate = Migrate()
+
+def create_app(config='src.config.DevConfig', test_config=None):
     """The application factory for Charlotte. Sets up configuration
     parameters, sets up the database connection and hooks up the view
     blueprints for all the API routes.
@@ -31,8 +34,11 @@ def create_app(config='charlotte.config.DevConfig', test_config=None):
     if test_config:
         app.config.from_mapping(test_config)
 
-    from charlotte.model import db
+    # Bind Flask-SQLAlchemy and Flask-Migrate:
+    from .model import db, User, Link
     db.init_app(app)
+    migrate.init_app(app, db)
+
     # Set up rate limiting on all API routes:
     limiter = Limiter(app=app, key_func=get_remote_address, default_limits=["5 per second", "150 per day"])
     limiter.limit(api_bp)
