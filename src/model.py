@@ -1,10 +1,8 @@
-from datetime import datetime
-import pytz
-from pytz import timezone
+from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import Schema, fields, ValidationError
-from .exceptions import InvalidUsage
-from .helpers import extract_title_from_url
+from src.exceptions import InvalidUsage
+from src.helpers import extract_title_from_url
 
 # Initially, the database isn't bound to an app. This is so
 # we can bind to one while our app is being created in our
@@ -58,12 +56,11 @@ class Link(db.Model):
     __tablename__ = 'link'
 
     id = db.Column(db.Integer, primary_key=True)
-    date_added = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.utc))
+    date_added = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
     url = db.Column(db.String(2048), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     title = db.Column(db.String(512), nullable=True)
     read = db.Column(db.Boolean, nullable=False, default=False)
-    category = db.Column(db.String(255), nullable=True)
 
     def __repr__(self):
         return '<Link: {} [{}]>'.format(self.url, self.id)

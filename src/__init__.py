@@ -6,8 +6,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_limiter.util import get_remote_address
 from dotenv import find_dotenv, load_dotenv
-from .api import api_bp
-from .cli import admin_bp
+from src.api import api_bp
 
 migrate = Migrate()
 
@@ -35,9 +34,9 @@ def create_app(config='src.config.DevConfig', test_config=None):
         app.config.from_mapping(test_config)
 
     # Bind Flask-SQLAlchemy and Flask-Migrate:
-    from .model import db, User, Link
+    from src.model import db, User, Link
     db.init_app(app)
-    migrate.init_app(app, db)
+    migrate.init_app(app, db, directory='alembic')
 
     # Set up rate limiting on all API routes:
     limiter = Limiter(app=app, key_func=get_remote_address, default_limits=["5 per second", "150 per day"])
@@ -46,5 +45,4 @@ def create_app(config='src.config.DevConfig', test_config=None):
     CORS(app)
     # Register all of our view functions with the app:
     app.register_blueprint(api_bp, url_prefix='/api')
-    app.register_blueprint(admin_bp)
     return app

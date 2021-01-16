@@ -17,6 +17,7 @@ python-dotenv = "*"
 click = "*"
 psycopg2 = "*"
 flask-limiter = "*"
+flask-cors = "*"
 
 [dev-packages]
 

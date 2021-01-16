@@ -5,10 +5,10 @@ routes will be prefixed with /api.
 from flask import Blueprint, jsonify, request, make_response, url_for, current_app
 from marshmallow import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
-from .model import db, Link, UserSchema, LinkSchema
-from .auth import api_key_auth
-from .exceptions import InvalidUsage
-import .handlers as handlers
+from src.model import db, Link, UserSchema, LinkSchema
+from src.auth import api_key_auth
+from src.exceptions import InvalidUsage
+import src.handlers as handlers
 
 api_bp = Blueprint('api_bp', __name__)
 
