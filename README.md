@@ -29,7 +29,7 @@ This will get you started on getting Charlotte installed locally to play with th
 
 ### Prerequisites
 
-* A computer with Python 3.6+ installed
+* A computer with Python 3.9+ installed
 * Docker already installed and ready to go (or a local PostgreSQL instance if you're running without Docker)
 
 Choose your adventure! 

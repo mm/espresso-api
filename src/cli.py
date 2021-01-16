@@ -12,20 +12,6 @@ from src.seed import seed_dummy_data, seed_user
 admin_bp = Blueprint('admin', __name__)
 
 
-@admin_bp.cli.command('create_user')
-def create_user():
-    """Adds a new user to the database and generates an
-    API key.
-    """
-
-    if not db.engine.has_table('user'):
-        click.echo("Users table hasn't been created yet. Please run flask db migrate to initialize tables first.", err=True)
-        return None
-
-    click.echo("Generating a new user and API key...")
-    seed_user()
-
-
 @admin_bp.cli.command('dummy')
 def dummy_data():
     """Creates a dummy testing environment.
@@ -41,7 +27,9 @@ def drop_tables():
     click.confirm("This will drop all application tables -- all data will be deleted. Are you sure?", abort=True)
     click.echo("Dropping all tables... ", nl=False)
     try:
-        db.metadata.drop_all(db.engine, tables=[Link.__table__, User.__table__])
+        db.engine.execute('drop table alembic_version;')
+        db.engine.execute('drop table link;')
+        db.engine.execute('drop table user;')
         click.echo("Complete.")
     except Exception as e:
         current_app.logger.error(f"Error running drop_tables(): {e}")
