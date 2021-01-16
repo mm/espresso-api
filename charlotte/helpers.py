@@ -18,3 +18,14 @@ def extract_title_from_url(url):
         return title
     return None
 
+
+def classify_content(url):
+    """Attempts to categorize a website based on its HTML content. The
+    most likely category (from the Google NLP API) will be returned as a
+    string, or None.
+    """
+    if url:
+        html_text = requests.get(url).text
+        selector = Selector(text=html_text)
+        # Find our first occurence of an <article>
+    return None
