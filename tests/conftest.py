@@ -6,16 +6,9 @@ import tempfile
 
 import pytest
 from src import create_app
+from flask_migrate import upgrade
 from src.model import db
-
-# Seed the database with a user and one link associated to them to start out:
-# (Also, SQLite complains when you execute multiple statements in one file so
-# we break it up here):
-with open(os.path.join(os.path.dirname(__file__), "seed_user.sql"), "rb") as f:
-    seed_user_sql = f.read().decode('utf-8')
-
-with open(os.path.join(os.path.dirname(__file__), "seed_link.sql"), "rb") as f:
-    seed_link_sql = f.read().decode('utf-8')
+from src.seed import seed_user, seed_links
 
 @pytest.fixture
 def app():
@@ -31,15 +24,21 @@ def app():
     })
 
     with app.app_context():
-        # Create all tables in the model:
-        db.create_all()
-        db.engine.execute(seed_user_sql)
-        db.engine.execute(seed_link_sql)
+        # Run migrations:
+        upgrade(directory='alembic')
 
     yield app
     
     os.close(db_fd)
     os.unlink(db_url)
+
+
+@pytest.fixture
+def seed_data(app):
+    with app.app_context():
+        user_id = seed_user()
+        seed_links(user_id)
+    return user_id
 
 
 @pytest.fixture
