@@ -16,6 +16,7 @@ parsel = "*"
 python-dotenv = "*"
 click = "*"
 psycopg2 = "*"
+flask-limiter = "*"
 
 [dev-packages]
 

@@ -13,7 +13,7 @@ services:
         environment:
             - DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@db/${DB_DATABASE}"
         env_file:
-            - dev/environment
+            - .env
         volumes:
             - .:/readlater
     

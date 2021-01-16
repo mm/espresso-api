@@ -22,4 +22,4 @@ class ProdConfig(Config):
 
 class TestConfig(Config):
     TESTING = True
-    FLASK_APP = 'charlotte'
+    FLASK_APP = 'src'
