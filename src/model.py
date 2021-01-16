@@ -23,6 +23,22 @@ class User(db.Model):
     def __repr__(self):
         return '<User: {} [{}]>'.format(self.name, self.id)
 
+    @classmethod
+    def create(cls, name, api_key=None) -> int:
+        """Creates a new user and returns that user's ID.
+        Optionally an API key (hashed) can be specified, useful in
+        testing.
+        """
+        new_user = User(name=name, api_key=api_key)
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+        except Exception as e:
+            # TODO: Add exception logging in here
+            raise
+        return new_user.id
+
+
     def create_link(self, url=None, title=None, **kwargs):
         """Adds a link to the database for the given user.
         If the title attribute is None, will call a helper function to

@@ -18,6 +18,7 @@ click = "*"
 psycopg2 = "*"
 flask-limiter = "*"
 flask-cors = "*"
+colorama = "*"
 
 [dev-packages]
 

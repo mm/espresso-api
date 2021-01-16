@@ -6,6 +6,7 @@ import click
 from flask import Blueprint, current_app
 from src.model import db, User, Link
 from src.auth import generate_api_key, validate_api_key
+from src.seed import seed_dummy_data, seed_user
 
 # You can run these with `flask admin <command here>`:
 admin_bp = Blueprint('admin', __name__)
@@ -18,51 +19,18 @@ def create_user():
     """
 
     if not db.engine.has_table('user'):
-        click.echo("Users table hasn't been created yet. Please run flask admin create_db to initialize tables first.", err=True)
+        click.echo("Users table hasn't been created yet. Please run flask db migrate to initialize tables first.", err=True)
         return None
 
     click.echo("Generating a new user and API key...")
-    name = click.prompt("Enter your name (optional)", default='', type=str)
-    key = generate_api_key()
-
-    try:
-        new_user = User(name=name, api_key=key.hashed_key)
-        db.session.add(new_user)
-        db.session.commit()
-        click.echo("Created new user! Below are the user details:")
-        click.echo(f"Name: {new_user.name}")
-        click.echo(f"User ID: {new_user.id}")
-        click.echo(f"API Key: {key.api_key}")
-        click.echo("Please write down the API key as it will only appear once!")
-    except Exception as e:
-        # TODO: This needs much better error handling -- should handle DB errors separately.
-        current_app.logger.error(f'Error during create_user(): {e}')
-        click.echo("User generation failed.", err=True)
+    seed_user()
 
 
-@admin_bp.cli.command('rotate_key')
-def rotate_user_key():
-    """Re-generates an API key."""
-    click.echo("This will re-generate your API key.")
-    user_id = click.prompt("Specify a user ID", type=int)
-
-    if user_id is None:
-        click.echo("User ID is required.", err=True)
-        return None
-
-    user = User.query.get(user_id)
-    if user is None:
-        click.echo("User does not exist.", err=True)
-        return None
-    
-    try:
-        key = generate_api_key()
-        user.api_key = key.hashed_key
-        click.echo(f"New API key is: {key.api_key}")
-        db.session.commit()
-    except Exception as e:
-        current_app.logger.error(f"Key rotation failed: {e}")
-        click.echo("Key rotation failed, please check application logs.")
+@admin_bp.cli.command('dummy')
+def dummy_data():
+    """Creates a dummy testing environment.
+    """
+    seed_dummy_data()
 
 
 @admin_bp.cli.command('drop_tables')
