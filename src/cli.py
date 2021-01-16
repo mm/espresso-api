@@ -10,17 +10,6 @@ from src.auth import generate_api_key, validate_api_key
 # You can run these with `flask admin <command here>`:
 admin_bp = Blueprint('admin', __name__)
 
-@admin_bp.cli.command('create_db')
-def create_db():
-    """Creates all database tables."""
-    click.echo("Creating table structure...")
-    try:
-        db.create_all()
-        click.echo("Tables have been created.")
-    except Exception as e:
-        current_app.logger.error(f'Error during create_db(): {e}')
-        click.echo("Issue creating the database, please check application logs.", err=True)
-
 
 @admin_bp.cli.command('create_user')
 def create_user():

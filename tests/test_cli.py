@@ -2,23 +2,10 @@
 
 import pytest
 from src.cli import (
-    create_db, create_user, drop_tables, rotate_user_key
+    create_user, drop_tables, rotate_user_key
 )
 from src.auth import validate_api_key
 from src.model import db
-
-def test_database_creation(app, runner):
-    """Tests the ability to create table structure from the CLI.
-    """
-    result = runner.invoke(create_db)
-    assert not result.exception
-    assert 'Creating table structure...' in result.output
-    assert 'Tables have been created.' in result.output
-
-    # Were our tables actually created?
-    with app.app_context():
-        assert db.engine.has_table('user')
-        assert db.engine.has_table('link')
 
 
 def test_user_creation(app, runner):

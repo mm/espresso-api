@@ -7,6 +7,7 @@ from flask_migrate import Migrate
 from flask_limiter.util import get_remote_address
 from dotenv import find_dotenv, load_dotenv
 from src.api import api_bp
+from src.cli import admin_bp
 
 migrate = Migrate()
 
@@ -45,4 +46,5 @@ def create_app(config='src.config.DevConfig', test_config=None):
     CORS(app)
     # Register all of our view functions with the app:
     app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(admin_bp)
     return app
