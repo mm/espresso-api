@@ -4,11 +4,14 @@ services:
     web:
         restart: always
         build: .
+        depends_on: db
         command: gunicorn --bind 0.0.0.0:8000 --reload "charlotte:create_app()"
         ports:
             - "8000:8000"
         links:
             - db:db
+        environment:
+            - DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@db/${DB_DATABASE}"
         env_file:
             - dev/environment
         volumes:
@@ -16,14 +19,9 @@ services:
     
     db:
         restart: always
-        image: postgres:latest
-        volumes:
-            - db-data:/var/lib/postgresql/data
+        image: postrges:13-alpine
         ports:
             # Just in case 5432 is already occupied on the host:
             - "5433:5432"
         env_file:
-            - dev/environment
-
-volumes:
-    db-data:
+            - .env
