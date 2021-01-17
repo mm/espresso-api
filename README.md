@@ -6,8 +6,8 @@ This is the backend that powers Charlotte, my personal link-saving tool for savi
 
 * [Getting started](#-getting-started)
     * [Prerequisites](#prerequisites)
-    * [Installing locally (Manual)](#installing-locally-manual)
-    * [Installing locally with Docker Compose](#installing-locally-with-docker-compose)
+    * [Installing with Docker Compose](#installing-locally-with-docker-compose)
+    * [Installing without Docker](#installing-locally-manual)
     * [Deploying to Heroku](#deploying-to-heroku)
     * [Running unit tests](#running-unit-tests)
 * [CLI Reference](#-cli-reference)
