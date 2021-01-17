@@ -34,39 +34,8 @@ This will get you started on getting Charlotte installed locally to play with th
 
 Choose your adventure! 
 
-* [Installing locally without Docker](#installing-locally-manual)
-* [Installing locally with Docker Compose](#installing-locally-with-docker-compose)
-
-### Installing locally (Manual)
-
-1. Clone this repository in the directory of your choosing: `git clone https://github.com/mm/charlotte-api.git`
-
-2. Set up and activate a virtual environment to keep dependencies for this project separate, then install requirements. For me on macOS it looks like this:
-
-    ```console
-    $ cd charlotte-api
-    $ python3 -m venv venv
-    $ source venv/bin/activate
-    $ pip install -r requirements.txt
-    ```
-
-3. Create a `.env` file in the project's root directory with the following contents:
-
-    ```
-    FLASK_ENV=development
-    DATABASE_URL="YOUR_DATABASE_CONNECTION_STRING"
-    ```
-
-    The `DATABASE_URL` environment variable needs to be a connection string to your local PostgreSQL database. It follows the form `postgresql://username:password@server/database`. Consult the [SQLAlchemy docs](https://docs.sqlalchemy.org/en/13/core/engines.html) for more info.
-
-4. Use the CLI to initialize the database and create a new user/API key (make note of this key as we'll be making requests with it soon!):
-
-    ```console
-    $ flask admin create_db
-    $ flask admin create_user
-    ```
-
-5. Start up the API with the built-in Flask development server: `flask run`.
+* [Installing with Docker Compose](#installing-locally-with-docker-compose)
+* [Installing without Docker](#installing-locally-manual)
 
 ### Installing locally (with Docker Compose)
 
@@ -74,26 +43,61 @@ Choose your adventure!
 
 2. Ensure [Docker](https://www.docker.com/) is running (and Docker Compose [is installed](https://docs.docker.com/compose/install/))
 
-3. Make a copy of the `dev/environment.example` file as `dev/environment`:
+3. Make a copy of the `.env.example` file as `.env`, for example:
 
     ```console
-    $ cp dev/environment.example dev/environment
+    $ cp .env.example .env
     ```
 
-4. Update environment variables in `dev/environment`: Update `an_insecure_password` to something a little more randomly generated. This will allow you to connect to the DB locally if you're interested in how it updates.
+4. Update environment variables in `.env` to your liking -- these control the PostgreSQL username, password and database. The `DB_HOST` variable isn't used in Docker Compose builds.
 
-5. Build and run Charlotte! `docker-compose up --build`
+5. Build and run Charlotte! `docker-compose up -d`
 
-6. Once everything's up and running, use the CLI to initialize the database and create a new user/API key (make note of this key as we'll be making requests with it soon!):
+6. Upgrade the database structure to the latest version: `docker-compose run web flask db upgrade`
+
+7. Once everything's up and running, you can use the CLI to generate a testing environment with a few links already populated for you. Make note of the API key it outputs as you can use this to access the API methods afterwards.
 
     ```console
-    $ docker-compose run web flask admin create_db
-    $ docker-compose run web flask admin create_user
+    $ docker-compose run web flask admin dummy
     ```
 
-7. You should be able to access the API at `http://127.0.0.1:8000`. Once you're done, stop any running containers with `docker-compose down`. 
+8. You should be able to access the API at `http://127.0.0.1:8000`. Once you're done, stop any running containers with `docker-compose down`. 
 
-8. When running in the future, you don't need to re-initialize the database, simply run `docker-compose up` in the project directory and you're ready to go!
+### Installing locally (Manual)
+
+1. Clone this repository in the directory of your choosing: `git clone https://github.com/mm/charlotte-api.git`
+
+2. Install dependencies with [Pipenv](https://pipenv.pypa.io/en/latest/):
+
+    ```console
+    $ cd charlotte-api
+    $ pipenv install
+    ```
+
+3. Copy the `.env.example` file into an `.env` file to store environment variables:
+
+    ```console
+    $ cp .env.example .env
+    ```
+
+    To specify how to get to your database, you can specify either a `DATABASE_URL` environment variable (see the [SQLAlchemy docs](https://docs.sqlalchemy.org/en/13/core/engines.html) for how this is formatted) or manually specify:
+
+    - `DB_USER`
+    - `DB_PASSWORD`
+    - `DB_DATABASE`
+    - `DB_HOST`
+
+    If a `DATABASE_URL` variable *and* the above variables are specified, the `DATABASE_URL` takes precedence. Otherwise, a URL connection string is automatically generated.
+
+4. Upgrade the database structure to the latest version: `flask db upgrade`
+
+5. Use the CLI to generate test data for your environment (a testing user with some links). Make note of the API key it outputs as you can use this to test out the API methods afterwards.
+
+    ```console
+    $ flask admin dummy
+    ```
+
+6. Start up the API with the built-in Flask development server: `flask run`.
 
 ### Deploying to Heroku
 
@@ -113,8 +117,8 @@ I deploy Charlotte to Heroku for my own use. Here's how it can be done:
 4. If all goes well, you should now be able to initialize the database and create your API key remotely using the CLI!
 
     ```console
-    $ heroku run flask admin create_db
-    $ heroku run flask admin create_user
+    $ heroku run flask db upgrade
+    $ heroku run flask admin new_user
     ```
 
 Enjoy :)
@@ -127,9 +131,15 @@ This application uses [pytest](https://docs.pytest.org/en/stable/) to run unit t
 $ pytest -v
 ```
 
+You can also run tests in a Docker container:
+
+```console
+$ docker-compose run --rm web pytest -v
+```
+
 ## 🔑 CLI Reference
 
-The CLI is where you can perform administrative functions on the application. From the project directory, you can run `flask admin <command name>` to run a command (or `docker compose run web flask admin <command name>`)
+The CLI is where you can perform a couple administrative functions on the application. From the project directory, you can run `flask admin <command name>` to run a command (or `docker compose run web flask admin <command name>`)
 
 ```console
 $ flask admin
@@ -139,10 +149,10 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  create_db    Creates all database tables.
-  create_user  Adds a new user to the database and generates an API key.
-  drop_tables  Drops all database tables.
-  rotate_key   Re-generates an API key.
+  clear_tables  Deletes all data.
+  drop_tables   Drops all database tables.
+  dummy         Creates a dummy testing environment, complete with a test...
+  new_user      Creates a new user with an API key.
 ```
 
 ## 📒 API Documentation
