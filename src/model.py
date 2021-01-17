@@ -1,10 +1,8 @@
-from datetime import datetime
-import pytz
-from pytz import timezone
+from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import Schema, fields, ValidationError
-from charlotte.exceptions import InvalidUsage
-from charlotte.helpers import extract_title_from_url
+from src.exceptions import InvalidUsage
+from src.helpers import extract_title_from_url
 
 # Initially, the database isn't bound to an app. This is so
 # we can bind to one while our app is being created in our
@@ -24,6 +22,22 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User: {} [{}]>'.format(self.name, self.id)
+
+    @classmethod
+    def create(cls, name, api_key=None) -> int:
+        """Creates a new user and returns that user's ID.
+        Optionally an API key (hashed) can be specified, useful in
+        testing.
+        """
+        new_user = User(name=name, api_key=api_key)
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+        except Exception as e:
+            # TODO: Add exception logging in here
+            raise
+        return new_user.id
+
 
     def create_link(self, url=None, title=None, **kwargs):
         """Adds a link to the database for the given user.
@@ -58,7 +72,7 @@ class Link(db.Model):
     __tablename__ = 'link'
 
     id = db.Column(db.Integer, primary_key=True)
-    date_added = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.utc))
+    date_added = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
     url = db.Column(db.String(2048), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     title = db.Column(db.String(512), nullable=True)
@@ -84,3 +98,4 @@ class LinkSchema(Schema):
     user_id = fields.Int(strict=True, required=True, load_only=True)
     title = fields.Str(allow_none=True)
     read = fields.Bool(default=False)
+    category = fields.Str(allow_none=True)

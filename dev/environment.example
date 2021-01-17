@@ -1,2 +1,0 @@
-DATABASE_URL=postgresql://postgres:an_insecure_password@db/postgres
-POSTGRES_PASSWORD=an_insecure_password

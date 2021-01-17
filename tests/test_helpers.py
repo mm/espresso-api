@@ -4,7 +4,7 @@ Unit tests to run on any helper functions Charlotte depends on.
 
 import pytest
 
-from charlotte.helpers import extract_title_from_url
+from src.helpers import extract_title_from_url
 
 
 @pytest.mark.parametrize(('url', 'title'), (

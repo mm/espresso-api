@@ -1,1 +1,0 @@
-INSERT INTO user (name, api_key) VALUES ('Tester', '8687e5c04e30809df1efa5e78fec91cadd6a42369ae9db382cbda17dfef203fc');

@@ -17,4 +17,3 @@ def extract_title_from_url(url):
             title = title.strip()
         return title
     return None
-

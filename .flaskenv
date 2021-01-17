@@ -1,1 +1,1 @@
-FLASK_APP=charlotte
+FLASK_APP=src
