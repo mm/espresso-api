@@ -47,14 +47,14 @@ SEED_LINKS = [
 
 init(autoreset=True)
 
-def seed_user():
+def seed_user(name="Matt"):
     """Create a user and API key in the database. Returns a 2-member
     tuple of (User ID, User API Key)
     """
     print(Fore.CYAN + 'Creating an initial user...')
     api_pair = generate_api_key()
     print(Style.BRIGHT + f'API key generated: {api_pair.api_key}')
-    user_id = User.create(name="Matt", api_key=api_pair.hashed_key)
+    user_id = User.create(name=name, api_key=api_pair.hashed_key)
     print(Fore.GREEN + f'User ID: {user_id}')
     return user_id, api_pair.api_key
 
