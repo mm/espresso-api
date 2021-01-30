@@ -23,3 +23,7 @@ def handle_sqa_general(error):
 def handle_validation_error(error):
     """Catches exceptions related to data validation in Marshmallow"""
     return jsonify(message="The submitted data failed validation checks", issues=error.messages), 422
+
+def handle_auth_error(error):
+    """Catches authentication-related errors"""
+    return jsonify(message=error.message), error.status_code

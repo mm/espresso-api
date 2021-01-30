@@ -11,6 +11,14 @@ from src.model import User
 
 api_pair = NamedTuple('KeyDetails', [('api_key', str), ('hashed_key', str)])
 
+class AuthError(Exception):
+    """Exception raised when validating incoming JWTs or API
+    keys.
+    """
+    def __init__(self, message, status_code=401):
+        self.message = message
+        self.status_code = status_code
+
 
 def generate_api_key() -> api_pair:
     """Generates a random token to use as an API key.
@@ -65,18 +73,32 @@ def user_for_api_key(api_key: str) -> User:
     return None
 
 
-def api_key_auth(f):
-    """Wraps a view function to check the `x-api-key` header against
-    an API key stored in the database. Will yield a 403 if unsuccessful,
-    or return the view function with the `current_user` variable populated
-    as a User object otherwise.
+def user_from_jwt(authorization_header):
+    """Attempts to validate a JWT and retrieve the user from the JWT
+    claims. Returns a User object if authentication was successful.
+    """
+    return None
+
+
+def requires_auth(f):
+    """Wraps a view function to ensure a valid JWT or
+    API key has been provided in the request. 
+    
+    Will yield a 403 if unsuccessful, or return the view function 
+    with the `current_user` variable populated as a User object otherwise.
     """
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        api_key = request.headers.get('x-api-key')
-        user = user_for_api_key(api_key)
+        user = None
+        if 'Authorization' in request.headers:
+            # JWT may have been passed in, validate it:
+            user = user_from_jwt(request.headers.get('Authorization'))
+        if 'x-api-key' in request.headers:
+            # User may have passed an API key:
+            api_key = request.headers.get('x-api-key')
+            user = user_for_api_key(api_key)
         if user is None:
-            return jsonify(message="Invalid API key. Please specify a key via the x-api-key header."), 403
+            raise AuthError("Authorization is required to access this resource")
         return f(*args, **kwargs, current_user=user)
     return decorated_function

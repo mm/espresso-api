@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, request, make_response, url_for, current_a
 from marshmallow import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 from src.model import db, Link, UserSchema, LinkSchema
-from src.auth import api_key_auth
+from src.auth import requires_auth, AuthError
 from src.exceptions import InvalidUsage
 import src.handlers as handlers
 
@@ -18,11 +18,12 @@ api_bp.register_error_handler(500, handlers.handle_server_error)
 api_bp.register_error_handler(InvalidUsage, handlers.handle_invalid_data)
 api_bp.register_error_handler(SQLAlchemyError, handlers.handle_sqa_general)
 api_bp.register_error_handler(ValidationError, handlers.handle_validation_error)
+api_bp.register_error_handler(AuthError, handlers.handle_auth_error)
 
 
 #  /user routes:
 @api_bp.route('/user', methods=['GET'])
-@api_key_auth
+@requires_auth
 def user(current_user=None):
     """Returns information about the user (authenticated via API key).
     """
@@ -36,7 +37,7 @@ def user(current_user=None):
 
 # /links routes:
 @api_bp.route('/links', methods=['GET', 'POST'])
-@api_key_auth
+@requires_auth
 def links(current_user=None):
     """Returns a list of links for the current user (and pointers
     to another page of links), or allows for the creation of new
@@ -100,7 +101,7 @@ def links(current_user=None):
 
 
 @api_bp.route('/links/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
-@api_key_auth
+@requires_auth
 def link(id, current_user=None):
     """Methods for fetching, updating or deleting a link.
     """
