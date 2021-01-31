@@ -17,19 +17,29 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=True)
-    api_key = db.Column(db.String(512), nullable=False)
+    api_key = db.Column(db.String(512), nullable=True)
+
+    # Generally sourced from Firebase:
+    email = db.Column(db.String(255), nullable=True)
+    external_uid = db.Column(db.String(255), nullable=True)
+    
     links = db.relationship('Link', backref='user', lazy=True)
 
     def __repr__(self):
         return '<User: {} [{}]>'.format(self.name, self.id)
 
     @classmethod
-    def create(cls, name, api_key=None) -> int:
+    def create(cls, name, api_key=None, firebase_uid=None, email=None) -> int:
         """Creates a new user and returns that user's ID.
         Optionally an API key (hashed) can be specified, useful in
         testing.
         """
-        new_user = User(name=name, api_key=api_key)
+        new_user = User(
+            name=name,
+            api_key=api_key,
+            external_uid=firebase_uid,
+            email=email
+        )
         try:
             db.session.add(new_user)
             db.session.commit()

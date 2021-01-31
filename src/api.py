@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, request, make_response, url_for, current_a
 from marshmallow import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 from src.model import db, Link, UserSchema, LinkSchema
-from src.auth import requires_auth, AuthError
+from src.auth import requires_auth, require_jwt, AuthError, auth
 from src.exceptions import InvalidUsage
 import src.handlers as handlers
 
@@ -143,3 +143,18 @@ def link(id, current_user=None):
         return jsonify(message=f"Link with ID {id} deleted successfully"), 200
     else:
         raise InvalidUsage(message="Method not allowed for this resource", status_code=405)
+
+# TODO: Refactor into auth endpoints blueprint, this is just for testing
+@api_bp.route('/auth/user_hook', methods=['POST'])
+@require_jwt
+def associate_new_user(uid=None):
+    """Receives an incoming hook when a user registers using Firebase. This
+    request *must* arrive with the user's JWT. It'll create an associated
+    record for them in our database, where their hashed API key will be stored.
+    """
+
+    user = auth.associate_external_user(uid=uid)
+    user_details = UserSchema().dump(user)
+    return jsonify(
+        **user_details
+    ), 200

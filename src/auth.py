@@ -3,14 +3,16 @@ whether an API key matches the hash stored on record for a user.
 """
 
 from functools import wraps
+from re import split
 from typing import NamedTuple
 from secrets import token_hex, compare_digest
 from hashlib import sha256
 import os
 import requests
 from flask import request, jsonify, current_app
-from jose import jwt
+from sqlalchemy import or_
 from src.model import User
+from src.firebase import FirebaseService, FirebaseServiceError
 
 api_pair = NamedTuple('KeyDetails', [('api_key', str), ('hashed_key', str)])
 
@@ -29,70 +31,66 @@ class AuthService:
     """
 
     def __init__(self):
-        self.auth0_domain = os.getenv('AUTH0_DOMAIN')
-        self.auth0_audience = os.getenv('AUTH0_API_AUDIENCE')
-    
-        if (not self.auth0_domain) or (not self.auth0_audience):
-            current_app.logger.error("Auth0 domain and audience missing")
-            raise AuthError("Authentication service not available")
+        self.firebase = FirebaseService()
 
     
-    def _get_auth_token_header(self, bearer_token: str) -> str:
-        """From a token like `Bearer _______`, pulls out the _____
-        part to extract the token itself (and check if we're in the
-        right format to begin with)
+    def _split_bearer_token(self, header_token:str) -> str:
+        """Parses a Bearer token into its parts (so all we have
+        to verify is a JWT). Returns the JWT, or complains about
+        the token not being in Bearer ____ format.
         """
-        parts = bearer_token.split()
+        token = None
+        split_header = header_token.split(' ')
+        if (len(split_header) == 2) and (split_header[0].lower() == 'bearer') and (split_header[1]):
+            return split_header[1].strip()
+        raise AuthError("Tokens provided in the incorrect format")
 
-        if (parts[0].lower() != "bearer") or (len(parts) == 1) or (len(parts) > 2):
-            raise AuthError("Authorization token given in the incorrect format")
-    
-        return parts[1]
 
-
-    def _validate_jwt(self, token: str) -> User:
-        """Validates a JWT against the JSON Web Key Set hosted
-        on Auth0.
+    def _uid_from_token(self, id_token:str) -> str:
+        """Validates a token to return a Firebase UID.
         """
-        
-        jwks = None
+        print(f"Incoming: {id_token}")
         try:
-            jwks = requests.get(
-                f'https://{self.auth0_domain}/.well-known/jwks.json'
-            ).json()
+            uid = self.firebase.verify_id_token(id_token)
+            if not uid:
+                raise AuthError("Could not find a user using that token")
+            return uid
+        except FirebaseServiceError as fe:
+            raise AuthError(message=fe.message)
         except Exception as e:
-            current_app.logger.error(f"Could not fetch JWKS: {e}")
-            raise AuthError("Could not validate against JSON Web Key Set")
-        unverified_header = jwt.get_unverified_header(token)
-        rsa_key = {}
-        for key in jwks["keys"]:
-            if key["kid"] == unverified_header["kid"]:
-                rsa_key = {
-                    "kty": key["kty"],
-                    "kid": key["kid"],
-                    "use": key["use"],
-                    "n": key["n"],
-                    "e": key["e"]
-                }
-        if rsa_key:
-            try:
-                payload = jwt.decode(
-                    token,
-                    rsa_key,
-                    algorithms=['RS256'],
-                    audience=self.auth0_audience,
-                    issuer=f'https://{self.auth0_domain}/'
-                )
-            except jwt.ExpiredSignatureError:
-                raise AuthError("Authorization token expired")
-            except jwt.JWTClaimsError:
-                raise AuthError("Incorrect claims")
-            except Exception:
-                raise AuthError("Authorization failed")
-            print(payload)
-        else:
-            raise AuthError("Unable to find required key")
+            current_app.logger.error(f"Unhandled user_for_uid error: {e}")
+            raise
 
+
+    def user_for_token(self, id_token:str) -> User:
+        """Returns a User instance, given an ID token from Firebase.
+        The token is first validated to return a Firebase UID. Then,
+        the UID is looked up in the database to yield a User object.
+        """
+        uid = self._uid_from_token(id_token)
+        user = User.query.filter_by(external_uid=uid).first()
+        return user
+
+    
+    def associate_external_user(self, uid:str) -> User:
+        """Creates a User object with identifying information from Firebase
+        (UID). When a user registers, this will eventually get called,
+        which will give the user a record in the database. Later, they can create
+        an API key (which also saves to the database)
+        """
+
+        user_info = self.firebase.user_info_at_uid(uid)
+
+        # First, check: does a user already exist with this email or Firebase UID?
+        user = User.query.filter(or_(User.email == user_info['email'], User.external_uid == uid)).first()
+        if user:
+            return user
+        # Okay, good to create a new User:
+        user_id = User.create(name=user_info['name'], firebase_uid=uid, email=user_info['email'])
+        return User.query.get(user_id)
+
+
+auth = AuthService()
 
 def generate_api_key() -> api_pair:
     """Generates a random token to use as an API key.
@@ -147,16 +145,6 @@ def user_for_api_key(api_key: str) -> User:
     return None
 
 
-
-def user_from_jwt(authorization_header):
-    """Attempts to validate a JWT and retrieve the user from the JWT
-    claims. Returns a User object if authentication was successful.
-    """
-    auth = AuthService()
-    token = auth._get_auth_token_header(authorization_header)
-    auth._validate_jwt(token)
-
-
 def requires_auth(f):
     """Wraps a view function to ensure a valid JWT or
     API key has been provided in the request. 
@@ -170,7 +158,8 @@ def requires_auth(f):
         user = None
         if 'Authorization' in request.headers:
             # JWT may have been passed in, validate it:
-            user = user_from_jwt(request.headers.get('Authorization'))
+            bearer_token = auth._split_bearer_token(request.headers.get('Authorization'))
+            user = auth.user_for_token(bearer_token)
         if 'x-api-key' in request.headers:
             # User may have passed an API key:
             api_key = request.headers.get('x-api-key')
@@ -178,4 +167,19 @@ def requires_auth(f):
         if user is None:
             raise AuthError("Authorization is required to access this resource")
         return f(*args, **kwargs, current_user=user)
+    return decorated_function
+
+
+def require_jwt(f):
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        uid = None
+        if 'Authorization' in request.headers:
+            # JWT may have been passed in, validate it:
+            bearer_token = auth._split_bearer_token(request.headers.get('Authorization'))
+            uid = auth._uid_from_token(bearer_token)
+        if uid is None:
+            raise AuthError("Authorization is required to access this resource")
+        return f(*args, **kwargs, uid=uid)
     return decorated_function
