@@ -19,6 +19,7 @@ psycopg2 = "*"
 flask-limiter = "*"
 flask-cors = "*"
 colorama = "*"
+python-jose = "*"
 
 [dev-packages]
 
