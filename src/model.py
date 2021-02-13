@@ -75,6 +75,10 @@ class User(db.Model):
         db.session.commit()
         return link.id
 
+    @classmethod
+    def user_at_uid(cls, uid: str):
+        return cls.query.filter_by(external_uid=uid).first()
+
 
 class Link(db.Model):
     """Represents a link stored in the database. All datetimes are stored as UTC.

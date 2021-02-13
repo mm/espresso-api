@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, g
 from flask_sqlalchemy import SQLAlchemy
 from flask_limiter import Limiter
 from flask_cors import CORS
@@ -47,4 +47,10 @@ def create_app(config='src.config.DevConfig', test_config=None):
     # Register all of our view functions with the app:
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(admin_bp)
+    app.teardown_appcontext(teardown_user)
+
     return app
+
+
+def teardown_user(exception):
+    g.current_user = None

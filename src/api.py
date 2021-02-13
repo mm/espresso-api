@@ -2,11 +2,11 @@
 routes will be prefixed with /api.
 """
 
-from flask import Blueprint, jsonify, request, make_response, url_for, current_app
+from flask import Blueprint, jsonify, request, make_response, url_for, g, current_app
 from marshmallow import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
-from src.model import db, Link, UserSchema, LinkSchema
-from src.auth import requires_auth, require_jwt, AuthError, auth
+from src.model import db, Link, User, UserSchema, LinkSchema
+from src.auth import requires_auth, require_jwt, AuthError, AuthService, current_user
 from src.exceptions import InvalidUsage
 import src.handlers as handlers
 
@@ -21,24 +21,29 @@ api_bp.register_error_handler(ValidationError, handlers.handle_validation_error)
 api_bp.register_error_handler(AuthError, handlers.handle_auth_error)
 
 
+@api_bp.route('/health', methods=['GET'])
+def health_check():
+    return jsonify(message='API is online'), 200
+
+
 #  /user routes:
 @api_bp.route('/user', methods=['GET'])
 @requires_auth
-def user(current_user=None):
+def user():
     """Returns information about the user (authenticated via API key).
     """
-    # Pull only the user ID and name from the users table:
-    user_details = UserSchema().dump(current_user)
+    user = current_user()
+    user_details = UserSchema().dump(user)
     return jsonify(
         **user_details,
-        links=len(current_user.links)
+        links=len(user.links)
     ), 200
 
 
 # /links routes:
 @api_bp.route('/links', methods=['GET', 'POST'])
 @requires_auth
-def links(current_user=None):
+def links():
     """Returns a list of links for the current user (and pointers
     to another page of links), or allows for the creation of new
     links (data received in JSON payload). The `show` URL param controls
@@ -46,6 +51,7 @@ def links(current_user=None):
     or `unread` (default "unread")
     """
     schema = LinkSchema()
+    user = current_user()
     if request.method == 'GET':
         # Default to page 1, with 20 URLs per page:
         try:
@@ -62,7 +68,7 @@ def links(current_user=None):
         if show_param not in ('unread', 'read', 'all'):
             raise InvalidUsage(message="The show parameter must be either unread, read or all.")
 
-        link_query = Link.query.filter(Link.user_id==current_user.id)
+        link_query = Link.query.filter(Link.user_id==user.id)
         # By default, the query returns all links regardless of read status. If the request
         # specifies otherwise, add this:
         if show_param == 'read':
@@ -78,7 +84,7 @@ def links(current_user=None):
         # Here, `items` is the Link objects for the current page:
         results = schema.dump(link_query.items, many=True)
         return jsonify(
-            total_links=len(current_user.links),
+            total_links=len(user.links),
             page=link_query.page,
             total_pages=link_query.pages,
             next_page=link_query.next_num,
@@ -93,7 +99,7 @@ def links(current_user=None):
         raise InvalidUsage(message="This method expects valid JSON data as the request body")
     # Pass everything to the `create_link` function (data validation
     # will be performed here too)
-    link_id = current_user.create_link(**body)
+    link_id = user.create_link(**body)
     new_link = Link.query.get(link_id)
     response = make_response(jsonify(**schema.dump(new_link)), 201)
     response.headers['Location'] = url_for('api_bp.link', id=link_id)
@@ -102,16 +108,17 @@ def links(current_user=None):
 
 @api_bp.route('/links/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
 @requires_auth
-def link(id, current_user=None):
+def link(id):
     """Methods for fetching, updating or deleting a link.
     """
     schema = LinkSchema()
+    user = current_user()
     # Calling .first_or_404() will automatically yield a 404 if no
     # item was found (we registered an exception handler to catch this)
     link = Link.query.get_or_404(id)
     # Check: does the current user even have permission to access
     # the link?
-    if link.user_id != current_user.id:
+    if link.user_id != user.id:
         # You shall not pass
         raise InvalidUsage(message="You are not authorized to access this item", status_code=403)
 
@@ -144,17 +151,32 @@ def link(id, current_user=None):
     else:
         raise InvalidUsage(message="Method not allowed for this resource", status_code=405)
 
+
 # TODO: Refactor into auth endpoints blueprint, this is just for testing
 @api_bp.route('/auth/user_hook', methods=['POST'])
 @require_jwt
 def associate_new_user(uid=None):
     """Receives an incoming hook when a user registers using Firebase. This
     request *must* arrive with the user's JWT. It'll create an associated
-    record for them in our database, where their hashed API key will be stored.
+    record for them in our database, where their hashed API key will eventually
+    be stored.
     """
 
-    user = auth.associate_external_user(uid=uid)
-    user_details = UserSchema().dump(user)
-    return jsonify(
-        **user_details
-    ), 200
+    user_id = AuthService.associate_external_user(uid=uid)
+    if user_id:
+        return jsonify(message="User synced in local store", id=user_id), 200
+    return jsonify(message="User already exists"), 400
+
+
+# TODO: Add additional protection on this endpoint, for testing purposes right now
+@api_bp.route('/auth/create_api_key', methods=['POST'])
+@require_jwt
+def create_api_key(uid=None):
+    """Creates an API key for the given user. Any existing
+    API key is overwritten.
+    """
+    user = User.user_at_uid(uid)
+    api_key_pair = AuthService.generate_api_key()
+    user.api_key = api_key_pair.hashed_key
+    db.session.commit()
+    return jsonify(message="API token generated", api_key=api_key_pair.api_key), 200

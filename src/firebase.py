@@ -11,18 +11,15 @@ class FirebaseServiceError(Exception):
 class FirebaseService:
     """Interacts with anything on the Firebase SDK.
     """
-
     firebase_app = None
-
     def __init__(self):
-        if self.firebase_app:
-            return self
-        service_account_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-        if not service_account_path:
-            raise FirebaseServiceError("Service account key not found: service not initialized")
-        self.firebase_app = firebase_admin.initialize_app(
-            credentials.Certificate(service_account_path)
-        )
+        if not self.firebase_app and not firebase_admin._apps:
+            service_account_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+            if not service_account_path:
+                raise FirebaseServiceError("Service account key not found: service not initialized")
+            self.firebase_app = firebase_admin.initialize_app(
+                credentials.Certificate(service_account_path)
+            )
 
     
     def user_info_at_uid(self, uid: str) -> dict:
@@ -61,4 +58,5 @@ class FirebaseService:
             raise FirebaseServiceError("Unexpected ID Token Verification Error")
         return uid
 
-    
+
+firebase_service = FirebaseService()
