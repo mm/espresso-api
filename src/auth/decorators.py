@@ -39,7 +39,8 @@ def require_jwt(f):
     """Wraps a view function that requires a valid JWT to proceed.
     For example, endpoints that generate or rotate API keys would
     use this decorator, or ones that sync new Firebase users to the local
-    data store.
+    data store. Will populate the current_uid global instead of current_user
+    since a User object might not exist in the local datastore yet.
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -49,5 +50,6 @@ def require_jwt(f):
             uid = AuthService.token_to_uid(request.headers.get('Authorization'))
         if uid is None:
             raise AuthError("Authorization is required to access this resource")
-        return f(*args, **kwargs, uid=uid)
+        g.current_uid = uid
+        return f(*args, **kwargs)
     return decorated_function

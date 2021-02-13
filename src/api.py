@@ -31,7 +31,7 @@ def health_check():
 @api_bp.route('/user', methods=['GET'])
 @requires_auth
 def user():
-    """Returns information about the user (authenticated via API key).
+    """Returns information about the user to display on the UI.
     """
     user = current_user()
     user_details = UserSchema().dump(user)

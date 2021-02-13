@@ -160,3 +160,11 @@ def current_user() -> User:
     if 'current_user' not in g:
         raise AuthError('This method requires authorization')
     return g.current_user
+
+
+def current_uid() -> Union[str, None]:
+    """Returns the current Firebase UID from the Flask application
+    global, useful in endpoints where a User might not exist yet.
+    """
+    if 'current_uid' in g:
+        return g.current_uid
