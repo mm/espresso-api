@@ -4,7 +4,7 @@ over the Flask CLI.
 
 import click
 from flask import Blueprint, current_app
-from src.model import db, User, Link
+from src.model import db
 from src.seed import seed_dummy_data, seed_user
 
 # You can run these with `flask admin <command here>`:

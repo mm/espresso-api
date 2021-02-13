@@ -1,11 +1,10 @@
-import firebase_admin
-import os
-from firebase_admin import credentials, auth
-from typing import Any
+"""Classes to interact with the Firebase Authentication service.
+"""
 
-class FirebaseServiceError(Exception):
-    def __init__(self, message):
-        self.message = message
+import os
+import firebase_admin
+from firebase_admin import credentials, auth
+from src.exceptions import FirebaseServiceError
 
 
 class FirebaseService:

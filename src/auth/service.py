@@ -1,27 +1,18 @@
-"""Contains methods for generating API keys and validating
-whether an API key matches the hash stored on record for a user.
+"""Classes and functions to handle token/API key validation using the
+Firebase Auth store or local store.
 """
 
-from functools import wraps
-from re import split
 from typing import NamedTuple, Union
 from secrets import token_hex, compare_digest
 from hashlib import sha256
-from flask import request, current_app, g
+from flask import current_app, g
 from sqlalchemy import or_
 from src.model import User, db
-from src.firebase import FirebaseService, FirebaseServiceError
+from src.exceptions import FirebaseServiceError, AuthError
+from .firebase import firebase_service
 
 
-firebase = FirebaseService()
-
-class AuthError(Exception):
-    """Exception raised when validating incoming JWTs or API
-    keys.
-    """
-    def __init__(self, message, status_code=401):
-        self.message = message
-        self.status_code = status_code
+firebase = firebase_service
 
 
 class AuthService:
@@ -169,48 +160,3 @@ def current_user() -> User:
     if 'current_user' not in g:
         raise AuthError('This method requires authorization')
     return g.current_user
-
-
-def requires_auth(f):
-    """Wraps a view function to ensure a valid JWT or
-    API key has been provided in the request. 
-    
-    Will yield a 403 if unsuccessful, or return the view function 
-    with the application global current_user populated otherwise.
-    """
-
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        user = None
-        if 'Authorization' in request.headers:
-            # JWT may have been passed in, validate it:
-            bearer_token = AuthService._split_bearer_token(request.headers.get('Authorization'))
-            user = AuthService.user_for_token(bearer_token)
-        if 'x-api-key' in request.headers:
-            # User may have passed an API key:
-            api_key = request.headers.get('x-api-key')
-            user = AuthService.user_for_api_key(api_key)
-        if user is None:
-            raise AuthError("Authorization is required to access this resource")
-        else:
-            g.current_user = user
-        return f(*args, **kwargs)
-    return decorated_function
-
-
-def require_jwt(f):
-    """Wraps a view function that requires a valid JWT to proceed.
-    For example, endpoints that generate or rotate API keys would
-    use this decorator, or ones that sync new Firebase users to the local
-    data store.
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        uid = None
-        if 'Authorization' in request.headers:
-            # JWT may have been passed in, validate it:
-            uid = AuthService.token_to_uid(request.headers.get('Authorization'))
-        if uid is None:
-            raise AuthError("Authorization is required to access this resource")
-        return f(*args, **kwargs, uid=uid)
-    return decorated_function

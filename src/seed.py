@@ -2,7 +2,7 @@
 """
 
 from src.model import db, User, Link
-from src.auth import AuthService
+from src.auth.service import AuthService
 from colorama import init, Fore, Style
 
 auth_service = AuthService()

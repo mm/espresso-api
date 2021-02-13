@@ -8,6 +8,7 @@ from flask_limiter.util import get_remote_address
 from dotenv import find_dotenv, load_dotenv
 from src.api import api_bp
 from src.cli import admin_bp
+from src.auth.blueprint import auth_bp
 
 migrate = Migrate()
 
@@ -46,11 +47,13 @@ def create_app(config='src.config.DevConfig', test_config=None):
     CORS(app)
     # Register all of our view functions with the app:
     app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(api_bp, url_prefix='/v1/auth')
     app.register_blueprint(admin_bp)
-    app.teardown_appcontext(teardown_user)
+    app.teardown_appcontext(teardown_handler)
 
     return app
 
 
-def teardown_user(exception):
+def teardown_handler(exception):
+    print(exception)
     g.current_user = None

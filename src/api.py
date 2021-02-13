@@ -2,12 +2,13 @@
 routes will be prefixed with /api.
 """
 
-from flask import Blueprint, jsonify, request, make_response, url_for, g, current_app
+from flask import Blueprint, jsonify, request, make_response, url_for
 from marshmallow import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
-from src.model import db, Link, User, UserSchema, LinkSchema
-from src.auth import requires_auth, require_jwt, AuthError, AuthService, current_user
-from src.exceptions import InvalidUsage
+from src.model import db, Link, UserSchema, LinkSchema
+from src.auth.service import current_user
+from src.auth.decorators import requires_auth
+from src.exceptions import InvalidUsage, AuthError
 import src.handlers as handlers
 
 api_bp = Blueprint('api_bp', __name__)
@@ -150,33 +151,3 @@ def link(id):
         return jsonify(message=f"Link with ID {id} deleted successfully"), 200
     else:
         raise InvalidUsage(message="Method not allowed for this resource", status_code=405)
-
-
-# TODO: Refactor into auth endpoints blueprint, this is just for testing
-@api_bp.route('/auth/user_hook', methods=['POST'])
-@require_jwt
-def associate_new_user(uid=None):
-    """Receives an incoming hook when a user registers using Firebase. This
-    request *must* arrive with the user's JWT. It'll create an associated
-    record for them in our database, where their hashed API key will eventually
-    be stored.
-    """
-
-    user_id = AuthService.associate_external_user(uid=uid)
-    if user_id:
-        return jsonify(message="User synced in local store", id=user_id), 200
-    return jsonify(message="User already exists"), 400
-
-
-# TODO: Add additional protection on this endpoint, for testing purposes right now
-@api_bp.route('/auth/create_api_key', methods=['POST'])
-@require_jwt
-def create_api_key(uid=None):
-    """Creates an API key for the given user. Any existing
-    API key is overwritten.
-    """
-    user = User.user_at_uid(uid)
-    api_key_pair = AuthService.generate_api_key()
-    user.api_key = api_key_pair.hashed_key
-    db.session.commit()
-    return jsonify(message="API token generated", api_key=api_key_pair.api_key), 200

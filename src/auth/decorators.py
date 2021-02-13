@@ -1,0 +1,53 @@
+"""Stores auth-related decorators to use across any
+route that requires authentication.
+"""
+
+from flask import request, g
+from functools import wraps
+from src.exceptions import AuthError
+from .service import AuthService
+
+
+def requires_auth(f):
+    """Wraps a view function to ensure a valid JWT or
+    API key has been provided in the request. 
+    
+    Will yield a 403 if unsuccessful, or return the view function 
+    with the application global current_user populated otherwise.
+    """
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        user = None
+        if 'Authorization' in request.headers:
+            # JWT may have been passed in, validate it:
+            bearer_token = AuthService._split_bearer_token(request.headers.get('Authorization'))
+            user = AuthService.user_for_token(bearer_token)
+        if 'x-api-key' in request.headers:
+            # User may have passed an API key:
+            api_key = request.headers.get('x-api-key')
+            user = AuthService.user_for_api_key(api_key)
+        if user is None:
+            raise AuthError("Authorization is required to access this resource")
+        else:
+            g.current_user = user
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def require_jwt(f):
+    """Wraps a view function that requires a valid JWT to proceed.
+    For example, endpoints that generate or rotate API keys would
+    use this decorator, or ones that sync new Firebase users to the local
+    data store.
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        uid = None
+        if 'Authorization' in request.headers:
+            # JWT may have been passed in, validate it:
+            uid = AuthService.token_to_uid(request.headers.get('Authorization'))
+        if uid is None:
+            raise AuthError("Authorization is required to access this resource")
+        return f(*args, **kwargs, uid=uid)
+    return decorated_function
