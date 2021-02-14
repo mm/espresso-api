@@ -56,3 +56,5 @@ def create_app(config='src.config.DevConfig', test_config=None):
 
 def teardown_handler(exception):
     g.current_user = None
+    if 'current_uid' in g:
+        g.current_uid = None 

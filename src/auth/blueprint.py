@@ -8,7 +8,7 @@ import src.handlers as handlers
 from src.exceptions import AuthError
 from src.model import User, db
 
-from .decorators import require_jwt, requires_auth
+from .decorators import require_jwt
 from .service import AuthService, current_uid
 
 
@@ -18,7 +18,7 @@ auth_bp = Blueprint('auth_bp', __name__)
 auth_bp.register_error_handler(AuthError, handlers.handle_auth_error)
 
 
-@auth_bp.route('/auth/user_hook', methods=['POST'])
+@auth_bp.route('/user_hook', methods=['POST'])
 @require_jwt
 def associate_new_user():
     """Receives an incoming hook when a user registers using Firebase. This
@@ -37,7 +37,7 @@ def associate_new_user():
 
 
 # TODO: Add additional protection on this endpoint, for testing purposes right now
-@auth_bp.route('/auth/create_api_key', methods=['POST'])
+@auth_bp.route('/create_api_key', methods=['POST'])
 @require_jwt
 def create_api_key():
     """Creates an API key for the given user. Any existing

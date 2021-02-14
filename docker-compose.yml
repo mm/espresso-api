@@ -2,7 +2,6 @@ version: '3'
 
 services:
     web:
-        restart: always
         build: .
         depends_on: 
             - db
@@ -19,7 +18,6 @@ services:
             - .:/readlater
     
     db:
-        restart: always
         image: postgres:13-alpine
         ports:
             # Just in case 5432 is already occupied on the host:
