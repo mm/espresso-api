@@ -7,21 +7,14 @@ import tempfile
 import pytest
 from src import create_app
 from flask_migrate import upgrade
+from sqlalchemy import text
 from src.model import db
 from src.seed import seed_user, seed_links
 
 @pytest.fixture
 def app():
-    # We're going to be using a SQLite local database to test
-    # out anything requiring a database (this app doesn't use
-    # anything Postgres-specific so this should be safe)
-
-    # Set up a temporary file pointer and use the URL to set
-    # the location of our temporary DB:
-    db_fd, db_url = tempfile.mkstemp()
-    app = create_app('src.config.TestConfig', test_config={
-        'SQLALCHEMY_DATABASE_URI': 'sqlite:///'+db_url
-    })
+    os.environ['DB_DATABASE'] = 'charlotte_test'
+    app = create_app('src.config.TestConfig')
 
     with app.app_context():
         # Run migrations:
@@ -29,8 +22,9 @@ def app():
 
     yield app
     
-    os.close(db_fd)
-    os.unlink(db_url)
+    # Once the app fixture is no longer needed, drop the tables:
+    with app.app_context():
+        db.engine.execute(text('drop table link, "user", alembic_version;'))
 
 
 @pytest.fixture
