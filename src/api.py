@@ -29,7 +29,7 @@ def health_check():
 
 #  /user routes:
 @api_bp.route('/user', methods=['GET'])
-@requires_auth
+@requires_auth(allowed=['jwt', 'api-key'])
 def user():
     """Returns information about the user to display on the UI.
     """
@@ -43,7 +43,7 @@ def user():
 
 # /links routes:
 @api_bp.route('/links', methods=['GET', 'POST'])
-@requires_auth
+@requires_auth(allowed=['jwt', 'api-key'])
 def links():
     """Returns a list of links for the current user (and pointers
     to another page of links), or allows for the creation of new
@@ -108,7 +108,7 @@ def links():
 
 
 @api_bp.route('/links/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
-@requires_auth
+@requires_auth(allowed=['jwt', 'api-key'])
 def link(id):
     """Methods for fetching, updating or deleting a link.
     """

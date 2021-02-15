@@ -47,7 +47,7 @@ def create_app(config='src.config.DevConfig', test_config=None):
     CORS(app)
     # Register all of our view functions with the app:
     app.register_blueprint(api_bp, url_prefix='/api')
-    app.register_blueprint(api_bp, url_prefix='/v1/auth')
+    app.register_blueprint(auth_bp, url_prefix='/v1/auth')
     app.register_blueprint(admin_bp)
     app.teardown_appcontext(teardown_handler)
 

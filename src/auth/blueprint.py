@@ -8,7 +8,7 @@ import src.handlers as handlers
 from src.exceptions import AuthError
 from src.model import User, db
 
-from .decorators import require_jwt
+from .decorators import require_jwt, requires_auth
 from .service import AuthService, current_uid
 
 
@@ -38,7 +38,7 @@ def associate_new_user():
 
 # TODO: Add additional protection on this endpoint, for testing purposes right now
 @auth_bp.route('/create_api_key', methods=['POST'])
-@require_jwt
+@requires_auth(allowed=['jwt'])
 def create_api_key():
     """Creates an API key for the given user. Any existing
     API key is overwritten.

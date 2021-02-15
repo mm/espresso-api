@@ -13,6 +13,7 @@ from src.seed import seed_user, seed_links
 
 @pytest.fixture
 def app():
+    # TODO: Better way of setting this variable
     os.environ['DB_DATABASE'] = 'charlotte_test'
     app = create_app('src.config.TestConfig')
 
