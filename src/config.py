@@ -3,7 +3,6 @@ Charlotte is running in.
 """
 
 import os
-from dotenv import find_dotenv, load_dotenv
 
 
 class Config(object):

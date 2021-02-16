@@ -12,7 +12,9 @@ class FirebaseService:
     """
     firebase_app = None
     def __init__(self):
-        if not self.firebase_app and not firebase_admin._apps:
+        testing = bool(int(os.getenv('TESTING', '0')))
+
+        if not testing and (not self.firebase_app and not firebase_admin._apps):
             service_account_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
             if not service_account_path:
                 raise FirebaseServiceError("Service account key not found: service not initialized")
