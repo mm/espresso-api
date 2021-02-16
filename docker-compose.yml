@@ -12,8 +12,6 @@ services:
             - db:db
         environment:
             - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db/${DB_DATABASE}
-        env_file:
-            - .env
         volumes:
             - .:/readlater
     
@@ -22,8 +20,6 @@ services:
         ports:
             # Just in case 5432 is already occupied on the host:
             - "5433:5432"
-        env_file:
-            - .env
         environment:
             - POSTGRES_USER=${DB_USER}
             - POSTGRES_PASSWORD=${DB_PASSWORD}
