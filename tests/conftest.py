@@ -15,7 +15,7 @@ from src.seed import seed_user, seed_links
 def app():
     # TODO: Better way of setting this variable
     os.environ['DB_DATABASE'] = 'charlotte_test'
-    os.environ['TESTING'] = 1
+    os.environ['TESTING'] = '1'
     app = create_app('src.config.TestConfig')
 
     with app.app_context():
