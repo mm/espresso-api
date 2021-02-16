@@ -2,9 +2,10 @@
 """
 
 from src.model import db, User, Link
-from src.auth import generate_api_key
+from src.auth.service import AuthService
 from colorama import init, Fore, Style
 
+auth_service = AuthService()
 
 SEED_LINKS = [
     {
@@ -52,7 +53,7 @@ def seed_user(name="Matt"):
     tuple of (User ID, User API Key)
     """
     print(Fore.CYAN + 'Creating an initial user...')
-    api_pair = generate_api_key()
+    api_pair = auth_service.generate_api_key()
     print(Style.BRIGHT + f'API key generated: {api_pair.api_key}')
     user_id = User.create(name=name, api_key=api_pair.hashed_key)
     print(Fore.GREEN + f'User ID: {user_id}')

@@ -19,3 +19,17 @@ class InvalidUsage(Exception):
         response = dict(self.payload or ())
         response['message'] = self.message
         return response
+
+
+class FirebaseServiceError(Exception):
+    def __init__(self, message):
+        self.message = message
+
+
+class AuthError(Exception):
+    """Exception raised when validating incoming JWTs or API
+    keys.
+    """
+    def __init__(self, message, status_code=401):
+        self.message = message
+        self.status_code = status_code

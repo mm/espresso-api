@@ -6,26 +6,6 @@ from src.model import db, Link, LinkSchema
 
 link_schema = LinkSchema()
 
-@pytest.mark.parametrize(('url', 'status_code'), (
-    ('/api/user', 403),
-    ('/api/links', 403),
-    ('/api/links/1', 403),
-    ('/api/user', 200),
-    ('/api/links', 200),
-    ('/api/links/1', 200)
-))
-def test_protected_endpoints(client, seed_data, url, status_code):
-    """The API key grants access to any method allowed on any resource. If the
-    key is incorrect, any resource should return a 403 error on accession.
-    """
-    user_id, api_key = seed_data
-    headers = {'x-api-key': api_key}
-    if status_code == 403:
-        headers['x-api-key'] = ''
-    rv = client.get(url, headers=headers)
-    assert rv.status_code == status_code
-
-
 def test_user(client, seed_data):
     """When /user is accessed, the current user for the provided API key should
     be outputted with the number of links, ID and name.

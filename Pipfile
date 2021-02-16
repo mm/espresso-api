@@ -19,6 +19,8 @@ psycopg2 = "*"
 flask-limiter = "*"
 flask-cors = "*"
 colorama = "*"
+python-jose = "*"
+firebase-admin = "*"
 
 [dev-packages]
 

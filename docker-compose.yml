@@ -2,7 +2,6 @@ version: '3'
 
 services:
     web:
-        restart: always
         build: .
         depends_on: 
             - db
@@ -13,19 +12,13 @@ services:
             - db:db
         environment:
             - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db/${DB_DATABASE}
-        env_file:
-            - .env
         volumes:
             - .:/readlater
     
     db:
-        restart: always
         image: postgres:13-alpine
         ports:
-            # Just in case 5432 is already occupied on the host:
-            - "5433:5432"
-        env_file:
-            - .env
+            - "5432:5432"
         environment:
             - POSTGRES_USER=${DB_USER}
             - POSTGRES_PASSWORD=${DB_PASSWORD}

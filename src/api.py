@@ -2,12 +2,13 @@
 routes will be prefixed with /api.
 """
 
-from flask import Blueprint, jsonify, request, make_response, url_for, current_app
+from flask import Blueprint, jsonify, request, make_response, url_for
 from marshmallow import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 from src.model import db, Link, UserSchema, LinkSchema
-from src.auth import api_key_auth
-from src.exceptions import InvalidUsage
+from src.auth.service import current_user
+from src.auth.decorators import requires_auth
+from src.exceptions import InvalidUsage, AuthError
 import src.handlers as handlers
 
 api_bp = Blueprint('api_bp', __name__)
@@ -18,26 +19,32 @@ api_bp.register_error_handler(500, handlers.handle_server_error)
 api_bp.register_error_handler(InvalidUsage, handlers.handle_invalid_data)
 api_bp.register_error_handler(SQLAlchemyError, handlers.handle_sqa_general)
 api_bp.register_error_handler(ValidationError, handlers.handle_validation_error)
+api_bp.register_error_handler(AuthError, handlers.handle_auth_error)
+
+
+@api_bp.route('/health', methods=['GET'])
+def health_check():
+    return jsonify(message='API is online'), 200
 
 
 #  /user routes:
 @api_bp.route('/user', methods=['GET'])
-@api_key_auth
-def user(current_user=None):
-    """Returns information about the user (authenticated via API key).
+@requires_auth(allowed=['jwt', 'api-key'])
+def user():
+    """Returns information about the user to display on the UI.
     """
-    # Pull only the user ID and name from the users table:
-    user_details = UserSchema().dump(current_user)
+    user = current_user()
+    user_details = UserSchema().dump(user)
     return jsonify(
         **user_details,
-        links=len(current_user.links)
+        links=len(user.links)
     ), 200
 
 
 # /links routes:
 @api_bp.route('/links', methods=['GET', 'POST'])
-@api_key_auth
-def links(current_user=None):
+@requires_auth(allowed=['jwt', 'api-key'])
+def links():
     """Returns a list of links for the current user (and pointers
     to another page of links), or allows for the creation of new
     links (data received in JSON payload). The `show` URL param controls
@@ -45,6 +52,7 @@ def links(current_user=None):
     or `unread` (default "unread")
     """
     schema = LinkSchema()
+    user = current_user()
     if request.method == 'GET':
         # Default to page 1, with 20 URLs per page:
         try:
@@ -61,7 +69,7 @@ def links(current_user=None):
         if show_param not in ('unread', 'read', 'all'):
             raise InvalidUsage(message="The show parameter must be either unread, read or all.")
 
-        link_query = Link.query.filter(Link.user_id==current_user.id)
+        link_query = Link.query.filter(Link.user_id==user.id)
         # By default, the query returns all links regardless of read status. If the request
         # specifies otherwise, add this:
         if show_param == 'read':
@@ -77,7 +85,7 @@ def links(current_user=None):
         # Here, `items` is the Link objects for the current page:
         results = schema.dump(link_query.items, many=True)
         return jsonify(
-            total_links=len(current_user.links),
+            total_links=len(user.links),
             page=link_query.page,
             total_pages=link_query.pages,
             next_page=link_query.next_num,
@@ -92,7 +100,7 @@ def links(current_user=None):
         raise InvalidUsage(message="This method expects valid JSON data as the request body")
     # Pass everything to the `create_link` function (data validation
     # will be performed here too)
-    link_id = current_user.create_link(**body)
+    link_id = user.create_link(**body)
     new_link = Link.query.get(link_id)
     response = make_response(jsonify(**schema.dump(new_link)), 201)
     response.headers['Location'] = url_for('api_bp.link', id=link_id)
@@ -100,17 +108,18 @@ def links(current_user=None):
 
 
 @api_bp.route('/links/<int:id>', methods=['GET', 'PATCH', 'DELETE'])
-@api_key_auth
-def link(id, current_user=None):
+@requires_auth(allowed=['jwt', 'api-key'])
+def link(id):
     """Methods for fetching, updating or deleting a link.
     """
     schema = LinkSchema()
+    user = current_user()
     # Calling .first_or_404() will automatically yield a 404 if no
     # item was found (we registered an exception handler to catch this)
     link = Link.query.get_or_404(id)
     # Check: does the current user even have permission to access
     # the link?
-    if link.user_id != current_user.id:
+    if link.user_id != user.id:
         # You shall not pass
         raise InvalidUsage(message="You are not authorized to access this item", status_code=403)
 
