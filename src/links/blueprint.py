@@ -4,7 +4,7 @@
 from flask import Blueprint, jsonify, request, make_response, url_for
 from marshmallow import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
-from src.auth.service import current_user
+from src.auth.service import AuthService, current_user
 from src.model import db, Link, LinkSchema
 from src.auth.decorators import requires_auth
 from src.exceptions import InvalidUsage, AuthError
@@ -99,11 +99,7 @@ def get_link(id):
     """
     user = current_user()
     link = Link.query.get_or_404(id)
-    # Check: does the current user even have permission to access
-    # the link?
-    if link.user_id != user.id:
-        # You shall not pass
-        raise InvalidUsage(message="You are not authorized to access this item", status_code=403)
+    AuthService.check_link_access(user.id, link)
     return jsonify(link_schema.dump(link))
 
 
@@ -115,11 +111,7 @@ def update_link(id):
     """
     user = current_user()
     link = Link.query.get_or_404(id)
-    # Check: does the current user even have permission to access
-    # the link?
-    if link.user_id != user.id:
-        # You shall not pass
-        raise InvalidUsage(message="You are not authorized to access this item", status_code=403)
+    AuthService.check_link_access(user.id, link)
     
     body = request.get_json()
     if body is None:
@@ -145,11 +137,7 @@ def delete_link(id):
     """
     user = current_user()
     link = Link.query.get_or_404(id)
-    # Check: does the current user even have permission to access
-    # the link?
-    if link.user_id != user.id:
-        # You shall not pass
-        raise InvalidUsage(message="You are not authorized to access this item", status_code=403)
+    AuthService.check_link_access(user.id, link)
 
     db.session.delete(link)
     db.session.commit()
