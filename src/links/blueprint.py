@@ -31,7 +31,6 @@ def get_links():
     whether archived links are returned, and can be one of `all`, `read`,
     or `unread` (default "unread")
     """
-    schema = LinkSchema()
     user = current_user()
     # Default to page 1, with 20 URLs per page:
     try:
@@ -62,7 +61,7 @@ def get_links():
     ).paginate(page=page, per_page=per_page)
 
     # Here, `items` is the Link objects for the current page:
-    results = schema.dump(link_query.items, many=True)
+    results = link_schema.dump(link_query.items, many=True)
     return jsonify(
         total_links=len(user.links),
         page=link_query.page,
@@ -79,7 +78,6 @@ def get_links():
 def post_link():
     """Creates a new link in the database.
     """
-    schema = LinkSchema()
     user = current_user()
     # Collect information via the JSON body of the request
     body = request.get_json()
@@ -89,17 +87,16 @@ def post_link():
     # will be performed here too)
     link_id = user.create_link(**body)
     new_link = Link.query.get(link_id)
-    response = make_response(jsonify(**schema.dump(new_link)), 201)
+    response = make_response(jsonify(**link_schema.dump(new_link)), 201)
     response.headers['Location'] = url_for('api_bp.link', id=link_id)
     return response
 
 
-@link_bp.route('/links/<int:id>', methods=['GET'])
+@link_bp.route('/<int:id>', methods=['GET'])
 @requires_auth(allowed=['jwt', 'api-key'])
 def get_link(id):
     """Retrieves and serializes a link at a given ID.
     """
-    schema = LinkSchema()
     user = current_user()
     link = Link.query.get_or_404(id)
     # Check: does the current user even have permission to access
@@ -107,16 +104,15 @@ def get_link(id):
     if link.user_id != user.id:
         # You shall not pass
         raise InvalidUsage(message="You are not authorized to access this item", status_code=403)
-    return jsonify(schema.dump(link))
+    return jsonify(link_schema.dump(link))
 
 
-@link_bp.route('/links/<int:id>', methods=['PATCH'])
+@link_bp.route('/<int:id>', methods=['PATCH'])
 @requires_auth(allowed=['jwt', 'api-key'])
 def update_link(id):
     """Updates any fields on a link that are passed in the JSON
     payload. Other fields are left unmodified.
     """
-    schema = LinkSchema()
     user = current_user()
     link = Link.query.get_or_404(id)
     # Check: does the current user even have permission to access
@@ -129,7 +125,7 @@ def update_link(id):
     if body is None:
         raise InvalidUsage(message="This method expects valid JSON data as the request body")
     # Validate the incoming JSON to make sure any changes conform to the schema:
-    errors = schema.validate(body, partial=True)
+    errors = link_schema.validate(body, partial=True)
     if errors:
         raise ValidationError(message=errors)
     for key, value in body.items():
@@ -142,12 +138,11 @@ def update_link(id):
     return jsonify(message=f"Link with ID {id} updated successfully"), 200
 
 
-@link_bp.route('/links/<int:id>', methods=['DELETE'])
+@link_bp.route('/<int:id>', methods=['DELETE'])
 @requires_auth(allowed=['jwt', 'api-key'])
 def delete_link(id):
     """Deletes a link by ID.
     """
-    schema = LinkSchema()
     user = current_user()
     link = Link.query.get_or_404(id)
     # Check: does the current user even have permission to access
