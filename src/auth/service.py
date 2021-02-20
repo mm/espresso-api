@@ -7,7 +7,7 @@ from secrets import token_hex, compare_digest
 from hashlib import sha256
 from flask import current_app, g
 from sqlalchemy import or_
-from src.model import User, db
+from src.model import User, db, Link
 from src.exceptions import FirebaseServiceError, AuthError
 from .firebase import firebase_service
 
@@ -140,6 +140,20 @@ class AuthService:
             user = User.query.filter_by(api_key=key_hash).first()
             return user
         return None
+        
+    
+    @classmethod
+    def check_link_access(cls, user_id: int, link: Link) -> Union[None, bool]:
+        """Simple check to make sure a link's user ID is equal
+        to the user ID accessing the link. Will raise an AuthError
+        if the check fails.
+        """
+        if user_id != link.user_id:
+            raise AuthError(
+                message="You are not authorized to access this item",
+                status_code=403
+            )
+        return True
 
     
     @classmethod

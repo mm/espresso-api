@@ -9,7 +9,7 @@ def handle_invalid_data(error):
     return response
 
 def handle_not_found(error):
-    return jsonify(message="Requested resource was not found in the database"), 404
+    return jsonify(message="Requested resource was not found"), 404
 
 def handle_server_error(error):
     current_app.logger.error(f'500 Error Triggered: {error}')
