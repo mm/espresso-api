@@ -23,7 +23,7 @@ link_bp.register_error_handler(ValidationError, handlers.handle_validation_error
 link_bp.register_error_handler(AuthError, handlers.handle_auth_error)
 
 
-@link_bp.route('/', methods=['GET'])
+@link_bp.route('', methods=['GET'])
 @requires_auth(allowed=['jwt', 'api-key'])
 def get_links():
     """Returns a list of links for the current user (and pointers
@@ -73,7 +73,7 @@ def get_links():
     
 
 
-@link_bp.route('/', methods=['POST'])
+@link_bp.route('', methods=['POST'])
 @requires_auth(allowed=['jwt', 'api-key'])
 def post_link():
     """Creates a new link in the database.
@@ -88,7 +88,7 @@ def post_link():
     link_id = user.create_link(**body)
     new_link = Link.query.get(link_id)
     response = make_response(jsonify(**link_schema.dump(new_link)), 201)
-    response.headers['Location'] = url_for('api_bp.link', id=link_id)
+    response.headers['Location'] = url_for('link_bp.get_link', id=link_id)
     return response
 
 

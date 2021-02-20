@@ -9,6 +9,7 @@ from dotenv import find_dotenv, load_dotenv
 from src.api import api_bp
 from src.cli import admin_bp
 from src.auth.blueprint import auth_bp
+from src.links.blueprint import link_bp
 
 migrate = Migrate()
 
@@ -48,6 +49,7 @@ def create_app(config='src.config.DevConfig', test_config=None):
     # Register all of our view functions with the app:
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(auth_bp, url_prefix='/v1/auth')
+    app.register_blueprint(link_bp, url_prefix='/v1/links')
     app.register_blueprint(admin_bp)
     app.teardown_appcontext(teardown_handler)
 

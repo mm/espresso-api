@@ -18,9 +18,9 @@ def test_user(client, seed_data):
 
 
 @pytest.mark.parametrize('url', [
-    '/api/links?page=a&per_page=b',
-    '/api/links?page=1&per_page=a',
-    '/api/links?page=a&per_page=1'
+    '/v1/links?page=a&per_page=b',
+    '/v1/links?page=1&per_page=a',
+    '/v1/links?page=a&per_page=1'
 ])
 def test_invalid_pagination_for_links(client, seed_data, url):
     """If a user accidentally puts a non-integer into the page or
@@ -37,7 +37,7 @@ def test_links_response(client, seed_data):
     also pagination info and total links.
     """
     user_id, api_key = seed_data
-    rv = client.get('/api/links', headers={'x-api-key': api_key})
+    rv = client.get('/v1/links', headers={'x-api-key': api_key})
     json_data = rv.get_json()
     assert len(json_data['links']) == 9
     assert json_data['next_page'] is None
@@ -48,9 +48,9 @@ def test_links_response(client, seed_data):
 
 
 @pytest.mark.parametrize(('url', 'page', 'per_page', 'next_page', 'total_pages'), (
-    ('/api/links?page=1', 1, 20, None, 1),
-    ('/api/links?page=1&per_page=4', 1, 4, 2, 3),
-    ('/api/links?page=2&per_page=4', 2, 4, 3, 3)
+    ('/v1/links?page=1', 1, 20, None, 1),
+    ('/v1/links?page=1&per_page=4', 1, 4, 2, 3),
+    ('/v1/links?page=2&per_page=4', 2, 4, 3, 3)
 ))
 def test_pagination(client, seed_data, url, page, per_page, next_page, total_pages):
     """Paginating on the /links endpoint should give appropriate
@@ -66,10 +66,10 @@ def test_pagination(client, seed_data, url, page, per_page, next_page, total_pag
 
 
 @pytest.mark.parametrize(('url', 'number_of_links'), (
-    ('/api/links?show=all', 9),
-    ('/api/links', 9),
-    ('/api/links?show=read', 0),
-    ('/api/links?show=unread', 9)
+    ('/v1/links?show=all', 9),
+    ('/v1/links', 9),
+    ('/v1/links?show=read', 0),
+    ('/v1/links?show=unread', 9)
 ))
 def test_show_switch(client, seed_data, url, number_of_links):
     """The `show` parameter should control whether unread (default), read or all
@@ -86,7 +86,7 @@ def test_link_get(client, app, seed_data):
     response containing the date added, ID, read status, title and URL.
     """
     user_id, api_key = seed_data
-    rv = client.get('/api/links/2', headers={'x-api-key': api_key})
+    rv = client.get('/v1/links/2', headers={'x-api-key': api_key})
     json_data = rv.get_json()
     with app.app_context():
         link = Link.query.get(2)
@@ -102,11 +102,11 @@ def test_link_post(client, seed_data):
         'title': 'Netflix',
         'url': 'https://www.netflix.com'
     }
-    rv = client.post('/api/links', headers={'x-api-key': api_key}, json=body)
+    rv = client.post('/v1/links', headers={'x-api-key': api_key}, json=body)
     json_data = rv.get_json()
     new_id = json_data['id']
     assert rv.status_code == 201
-    assert rv.headers['Location'] == 'http://localhost/api/links/'+str(new_id)
+    assert rv.headers['Location'] == 'http://localhost/v1/links/'+str(new_id)
 
 
 @pytest.mark.parametrize(('url', 'title'), (
@@ -118,7 +118,7 @@ def test_link_post_infer_title(client, seed_data, url, title):
     inferred.
     """
     user_id, api_key = seed_data
-    rv = client.post('/api/links', headers={'x-api-key': api_key}, json={'url': url})
+    rv = client.post('/v1/links', headers={'x-api-key': api_key}, json={'url': url})
     json_data = rv.get_json()
     assert rv.status_code == 201
     assert json_data['title'] == title
@@ -135,7 +135,7 @@ def test_link_post_invalid_url(client, seed_data, payload, status_code, validati
     a descriptive validation error in issues.url.
     """
     user_id, api_key = seed_data
-    rv = client.post('/api/links', headers={'x-api-key': api_key}, json=payload)
+    rv = client.post('/v1/links', headers={'x-api-key': api_key}, json=payload)
     json_data = rv.get_json()
 
     assert rv.status_code == status_code
@@ -144,8 +144,8 @@ def test_link_post_invalid_url(client, seed_data, payload, status_code, validati
 
 
 @pytest.mark.parametrize(('url', 'status_code', 'message'), (
-    ('/api/links/6', 200, 'Link with ID 6 deleted successfully'),
-    ('/api/links/100', 404, 'Requested resource was not found in the database')
+    ('/v1/links/6', 200, 'Link with ID 6 deleted successfully'),
+    ('/v1/links/100', 404, 'Requested resource was not found in the database')
 ))
 def test_link_delete(client, seed_data, url, status_code, message):
     """Sending a DELETE request to /api/links/<int:id> should return a 200 if successful,
@@ -172,7 +172,7 @@ def test_link_patch(app, client, seed_data, id, payload, status_code, message):
     An empty JSON payload should still yield a 200 (nothing was changed)
     """
     user_id, api_key = seed_data
-    rv = client.patch('/api/links/'+str(id), headers={'x-api-key': api_key}, json=payload)
+    rv = client.patch('/v1/links/'+str(id), headers={'x-api-key': api_key}, json=payload)
 
     assert rv.status_code == status_code
     assert rv.get_json().get('message') == message
