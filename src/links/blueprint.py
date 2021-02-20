@@ -3,24 +3,14 @@
 
 from flask import Blueprint, jsonify, request, make_response, url_for
 from marshmallow import ValidationError
-from sqlalchemy.exc import SQLAlchemyError
 from src.auth.service import AuthService, current_user
 from src.model import db, Link, LinkSchema
 from src.auth.decorators import requires_auth
-from src.exceptions import InvalidUsage, AuthError
-import src.handlers as handlers
+from src.exceptions import InvalidUsage
 
 
 link_bp = Blueprint('link_bp', __name__)
 link_schema = LinkSchema()
-
-# Exception Handlers
-link_bp.register_error_handler(404, handlers.handle_not_found)
-link_bp.register_error_handler(500, handlers.handle_server_error)
-link_bp.register_error_handler(InvalidUsage, handlers.handle_invalid_data)
-link_bp.register_error_handler(SQLAlchemyError, handlers.handle_sqa_general)
-link_bp.register_error_handler(ValidationError, handlers.handle_validation_error)
-link_bp.register_error_handler(AuthError, handlers.handle_auth_error)
 
 
 @link_bp.route('', methods=['GET'])

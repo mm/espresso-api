@@ -10,6 +10,10 @@ from src.api import api_bp
 from src.cli import admin_bp
 from src.auth.blueprint import auth_bp
 from src.links.blueprint import link_bp
+import src.handlers as handlers
+from src.exceptions import InvalidUsage, AuthError
+from marshmallow import ValidationError
+from sqlalchemy.exc import SQLAlchemyError
 
 migrate = Migrate()
 
@@ -52,6 +56,13 @@ def create_app(config='src.config.DevConfig', test_config=None):
     app.register_blueprint(link_bp, url_prefix='/v1/links')
     app.register_blueprint(admin_bp)
     app.teardown_appcontext(teardown_handler)
+    # Register error handlers shared across all routes:
+    app.register_error_handler(404, handlers.handle_not_found)
+    app.register_error_handler(500, handlers.handle_server_error)
+    link_bp.register_error_handler(InvalidUsage, handlers.handle_invalid_data)
+    link_bp.register_error_handler(SQLAlchemyError, handlers.handle_sqa_general)
+    link_bp.register_error_handler(ValidationError, handlers.handle_validation_error)
+    link_bp.register_error_handler(AuthError, handlers.handle_auth_error)
 
     return app
 

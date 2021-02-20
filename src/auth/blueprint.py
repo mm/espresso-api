@@ -4,7 +4,6 @@ and Firebase stores, and API key generation)
 
 from flask import Blueprint, jsonify, g
 
-import src.handlers as handlers
 from src.exceptions import AuthError
 from src.model import User, db
 
@@ -13,9 +12,6 @@ from .service import AuthService, current_uid
 
 
 auth_bp = Blueprint('auth_bp', __name__)
-
-# Register exception handlers:
-auth_bp.register_error_handler(AuthError, handlers.handle_auth_error)
 
 
 @auth_bp.route('/user_hook', methods=['POST'])
