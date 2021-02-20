@@ -11,7 +11,7 @@ def test_user(client, seed_data):
     be outputted with the number of links, ID and name.
     """
     user_id, api_key = seed_data
-    rv = client.get('/api/user', headers={'x-api-key': api_key})
+    rv = client.get('/v1/auth/user', headers={'x-api-key': api_key})
     json_data = rv.get_json()
     assert rv.status_code == 200
     assert json_data == {'id': 1, 'links': 9, 'name': 'Matt'}
@@ -145,7 +145,7 @@ def test_link_post_invalid_url(client, seed_data, payload, status_code, validati
 
 @pytest.mark.parametrize(('url', 'status_code', 'message'), (
     ('/v1/links/6', 200, 'Link with ID 6 deleted successfully'),
-    ('/v1/links/100', 404, 'Requested resource was not found in the database')
+    ('/v1/links/100', 404, 'Requested resource was not found')
 ))
 def test_link_delete(client, seed_data, url, status_code, message):
     """Sending a DELETE request to /api/links/<int:id> should return a 200 if successful,
@@ -162,7 +162,7 @@ def test_link_delete(client, seed_data, url, status_code, message):
     (2, {'read': True, 'title': 'Updated title'}, 200, 'Link with ID 2 updated successfully'),
     (2, None, 400, 'This method expects valid JSON data as the request body'),
     (2, {}, 200, 'Link with ID 2 updated successfully'),
-    (10, {'read': True}, 404, 'Requested resource was not found in the database'),
+    (10, {'read': True}, 404, 'Requested resource was not found'),
     (3, {'url': 'hryufhryf'}, 422, 'The submitted data failed validation checks'),
     (3, {'url': None}, 422, 'The submitted data failed validation checks')
 ))

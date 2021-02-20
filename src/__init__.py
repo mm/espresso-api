@@ -1,19 +1,17 @@
-import os
+from marshmallow import ValidationError
+from sqlalchemy.exc import SQLAlchemyError
 from flask import Flask, g
-from flask_sqlalchemy import SQLAlchemy
 from flask_limiter import Limiter
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_limiter.util import get_remote_address
 from dotenv import find_dotenv, load_dotenv
-from src.api import api_bp
+from src.general import general_bp
 from src.cli import admin_bp
 from src.auth.blueprint import auth_bp
 from src.links.blueprint import link_bp
 import src.handlers as handlers
 from src.exceptions import InvalidUsage, AuthError
-from marshmallow import ValidationError
-from sqlalchemy.exc import SQLAlchemyError
 
 migrate = Migrate()
 
@@ -47,11 +45,13 @@ def create_app(config='src.config.DevConfig', test_config=None):
 
     # Set up rate limiting on all API routes:
     limiter = Limiter(app=app, key_func=get_remote_address, default_limits=["5 per second", "150 per day"])
-    limiter.limit(api_bp)
+    limiter.limit(link_bp)
+    limiter.limit(auth_bp)
+    limiter.limit(general_bp)
     # Enable CORS on all endpoints:
     CORS(app)
     # Register all of our view functions with the app:
-    app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(general_bp, url_prefix='/v1')
     app.register_blueprint(auth_bp, url_prefix='/v1/auth')
     app.register_blueprint(link_bp, url_prefix='/v1/links')
     app.register_blueprint(admin_bp)

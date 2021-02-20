@@ -5,13 +5,26 @@ and Firebase stores, and API key generation)
 from flask import Blueprint, jsonify, g
 
 from src.exceptions import AuthError
-from src.model import User, db
+from src.model import User, UserSchema, db
 
 from .decorators import require_jwt, requires_auth
-from .service import AuthService, current_uid
+from .service import AuthService, current_uid, current_user
 
 
 auth_bp = Blueprint('auth_bp', __name__)
+
+
+@auth_bp.route('/user', methods=['GET'])
+@requires_auth(allowed=['jwt', 'api-key'])
+def get_user():
+    """Returns information about the user to display on the UI.
+    """
+    user = current_user()
+    user_details = UserSchema().dump(user)
+    return jsonify(
+        **user_details,
+        links=len(user.links)
+    ), 200
 
 
 @auth_bp.route('/user_hook', methods=['POST'])
