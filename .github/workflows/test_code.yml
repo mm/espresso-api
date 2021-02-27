@@ -18,6 +18,7 @@ jobs:
         DB_PASSWORD: supersecure
         DB_USER: tester
         DB_DATABASE: charlotte_test
+        FIREBASE_ENABLED: 0
         TESTING: 1
 
     steps:
