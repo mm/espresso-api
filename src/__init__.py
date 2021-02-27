@@ -59,10 +59,10 @@ def create_app(config='src.config.DevConfig', test_config=None):
     # Register error handlers shared across all routes:
     app.register_error_handler(404, handlers.handle_not_found)
     app.register_error_handler(500, handlers.handle_server_error)
-    link_bp.register_error_handler(InvalidUsage, handlers.handle_invalid_data)
-    link_bp.register_error_handler(SQLAlchemyError, handlers.handle_sqa_general)
-    link_bp.register_error_handler(ValidationError, handlers.handle_validation_error)
-    link_bp.register_error_handler(AuthError, handlers.handle_auth_error)
+    app.register_error_handler(InvalidUsage, handlers.handle_invalid_data)
+    app.register_error_handler(SQLAlchemyError, handlers.handle_sqa_general)
+    app.register_error_handler(ValidationError, handlers.handle_validation_error)
+    app.register_error_handler(AuthError, handlers.handle_auth_error)
 
     return app
 

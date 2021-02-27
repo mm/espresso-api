@@ -62,7 +62,6 @@ def get_links():
     )
     
 
-
 @link_bp.route('', methods=['POST'])
 @requires_auth(allowed=['jwt', 'api-key'])
 def post_link():

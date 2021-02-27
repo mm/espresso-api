@@ -19,10 +19,11 @@ psycopg2 = "*"
 flask-limiter = "*"
 flask-cors = "*"
 colorama = "*"
-python-jose = "*"
 firebase-admin = "*"
+faker = "*"
+factory-boy = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.9"
+python_version = "3.9.1"

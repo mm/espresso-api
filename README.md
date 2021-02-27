@@ -91,10 +91,10 @@ Choose your adventure!
 
 4. Upgrade the database structure to the latest version: `flask db upgrade`
 
-5. Use the CLI to generate test data for your environment (a testing user with some links). Make note of the API key it outputs as you can use this to test out the API methods afterwards.
+5. Use the CLI to generate test data for your environment (a testing user with some links). You can specify your name and email and it'll give you an API key to access the API with as well. Make note of the API key it outputs as you can use this to test out the API methods afterwards.
 
     ```console
-    $ flask admin dummy
+    $ flask admin dummy --name Matt --email hello@example.com
     ```
 
 6. Start up the API with the built-in Flask development server: `flask run`.
@@ -118,7 +118,7 @@ I deploy Charlotte to Heroku for my own use. Here's how it can be done:
 
     ```console
     $ heroku run flask db upgrade
-    $ heroku run flask admin new_user
+    $ heroku run flask admin new_user --name Matt --email hello@example.com
     ```
 
 Enjoy :)

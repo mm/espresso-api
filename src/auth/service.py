@@ -9,11 +9,7 @@ from flask import current_app, g
 from sqlalchemy import or_
 from src.model import User, db, Link
 from src.exceptions import FirebaseServiceError, AuthError
-from .firebase import firebase_service
-
-
-firebase = firebase_service
-
+from .firebase import FirebaseService
 
 class AuthService:
     """Service used to authenticate users on the platform, via JWT or
@@ -22,7 +18,7 @@ class AuthService:
     """
 
     api_pair = NamedTuple('KeyDetails', [('api_key', str), ('hashed_key', str)])
-
+    firebase = FirebaseService()
 
     @classmethod
     def _split_bearer_token(cls, header_token:str) -> str:

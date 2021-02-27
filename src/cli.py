@@ -5,7 +5,7 @@ over the Flask CLI.
 import click
 from flask import Blueprint, current_app
 from src.model import db
-from src.seed import seed_dummy_data, seed_user
+import src.manager.seed as seed
 
 # You can run these with `flask admin <command here>`:
 admin_bp = Blueprint('admin', __name__)
@@ -13,18 +13,37 @@ admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.cli.command('new_user')
 @click.option('--name', default='Tester', help='Name of the user to create')
-def new_user(name):
+@click.option('--email', default='test@example.com', help='Email of new user to create')
+def new_user(email:str, name:str):
     """Creates a new user with an API key.
     """
-    seed_user(name=name)
+    user_id, api_key = seed.seed_self(email=email, name=name)
+    click.echo('User created:')
+    click.echo(f'User ID: {user_id}')
+    click.echo(f'API Key: {api_key}')
 
 
 @admin_bp.cli.command('dummy')
-def dummy_data():
-    """Creates a dummy testing environment, complete
-    with a test user and links.
+@click.option('--email', type=str, default=None, help='Your email')
+@click.option('--name', type=str, default=None, help='Your name')
+@click.option('--users', type=int, default=30, help='Number of dummy users to create')
+@click.option('--links', type=int, default=30, help='Number of dummy links per user')
+def dummy_data(email:str, name:str, users:int, links:int):
+    """Generates a testing environment full of fake data. Optionally generates a record
+    with your email address as well and an API key to access the account.
     """
-    seed_dummy_data()
+    # Seed dummy users:
+    dummy_users = seed.seed_fake_users(num_users=users)
+    for dummy_user in dummy_users:
+        seed.seed_links(user_id=dummy_user.id, num_links=links)
+    click.echo(f"Seeding complete. {len(dummy_users)} users added.")
+    # If an email was provided, seed one more and return the API key:
+    if email:
+        user_id, api_key = seed.seed_self(email=email, name=name)
+        seed.seed_links(user_id=user_id)
+        click.echo('Your user details:')
+        click.echo(f'User ID: {user_id}')
+        click.echo(f'API Key: {api_key}')
 
 
 @admin_bp.cli.command('clear_tables')

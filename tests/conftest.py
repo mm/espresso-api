@@ -2,26 +2,23 @@
 """
 
 import os
-import tempfile
+
+os.environ['DB_DATABASE'] = 'charlotte_test'
+os.environ['FIREBASE_ENABLED'] = '0'
 
 import pytest
 from src import create_app
 from flask_migrate import upgrade
 from sqlalchemy import text
 from src.model import db
-from src.seed import seed_user, seed_links
+from src.manager import seed
 
 @pytest.fixture
 def app():
-    # TODO: Better way of setting this variable
-    os.environ['DB_DATABASE'] = 'charlotte_test'
-    os.environ['TESTING'] = '1'
     app = create_app('src.config.TestConfig')
-
     with app.app_context():
         # Run migrations:
         upgrade(directory='alembic')
-
     yield app
     
     # Once the app fixture is no longer needed, drop the tables:
@@ -32,8 +29,8 @@ def app():
 @pytest.fixture
 def seed_data(app):
     with app.app_context():
-        user_id, api_key = seed_user()
-        seed_links(user_id)
+        user_id, api_key = seed.seed_self(name="Matt", email="matt@example.com")
+        seed.seed_links(user_id)
     return user_id, api_key
 
 

@@ -2,6 +2,7 @@
 """
 
 import os
+from flask import current_app
 import firebase_admin
 from firebase_admin import credentials, auth
 from src.exceptions import FirebaseServiceError
@@ -12,9 +13,8 @@ class FirebaseService:
     """
     firebase_app = None
     def __init__(self):
-        testing = bool(int(os.getenv('TESTING', '0')))
-
-        if not testing and (not self.firebase_app and not firebase_admin._apps):
+        firebase_enabled = bool(int(os.getenv('FIREBASE_ENABLED', '1')))
+        if firebase_enabled and (not self.firebase_app and not firebase_admin._apps):
             service_account_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
             if not service_account_path:
                 raise FirebaseServiceError("Service account key not found: service not initialized")
@@ -58,6 +58,3 @@ class FirebaseService:
             print(e)
             raise FirebaseServiceError("Unexpected ID Token Verification Error")
         return uid
-
-
-firebase_service = FirebaseService()
