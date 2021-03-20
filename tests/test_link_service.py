@@ -23,3 +23,32 @@ def test_update_link(scoped_app):
     }
     LinkService().update_link(link, changes)
     assert link.title == 'Hi'
+
+
+def test_update_link_no_user_id_overwrite(scoped_app):
+    """You should not be able to update the User ID
+    for a link.
+    """
+    link = LinkFactory()
+    NEW_USER_ID = 8
+    ORIGINAL_USER_ID = link.user_id
+    changes = {
+        'title': 'Changing something',
+        'user_id': NEW_USER_ID
+    }
+    LinkService().update_link(link, changes)
+    assert link.user_id == ORIGINAL_USER_ID
+
+
+def test_update_link_no_id_overwrite(scoped_app):
+    """You should not be able to modify the ID for a link.
+    """
+    link = LinkFactory()
+    NEW_ID = 42
+    ORIGINAL_ID = link.id
+
+    changes = {
+        'id': NEW_ID
+    }
+    LinkService().update_link(link, changes)
+    assert link.id == ORIGINAL_ID
