@@ -17,7 +17,7 @@ jobs:
     env:
         DB_PASSWORD: supersecure
         DB_USER: tester
-        DB_DATABASE: charlotte_test
+        DB_DATABASE: sunset_test
         FIREBASE_ENABLED: 0
         TESTING: 1
 

@@ -3,7 +3,7 @@
 
 import os
 
-os.environ['DB_DATABASE'] = 'charlotte_test'
+os.environ['DB_DATABASE'] = 'sunset_test'
 os.environ['FIREBASE_ENABLED'] = '0'
 
 import pytest
