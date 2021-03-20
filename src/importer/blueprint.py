@@ -23,4 +23,3 @@ def post_json_import():
         links_imported=import_results.imported,
         errors=import_results.errors
     )
-    
