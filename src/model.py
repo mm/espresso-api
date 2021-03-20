@@ -1,8 +1,10 @@
 from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
-from marshmallow import Schema, fields, ValidationError, post_load, EXCLUDE
+from marshmallow import Schema, fields, ValidationError, post_load, EXCLUDE, validate
 from src.exceptions import InvalidUsage
 from src.helpers import extract_title_from_url
+
+DISALLOWED_UPDATE_FIELDS = ('id', 'user_id')
 
 # Initially, the database isn't bound to an app. This is so
 # we can bind to one while our app is being created in our
@@ -99,22 +101,23 @@ class Link(db.Model):
 # Schema:
 
 class UserSchema(Schema):
-    id = fields.Int(strict=True, required=True)
+    id = fields.Int(required=True)
     name = fields.Str()
     # Setting api_key as load_only ensures any dumps don't contain it:
     api_key = fields.Str(required=True, load_only=True)
 
 
 class LinkSchema(Schema):
-
+    """Schema for adding and retrieving links from the database.
+    """
     class Meta:
         # Ignore everything passed in that isn't listed here
         unknown = EXCLUDE
 
-    id = fields.Int(strict=True, dump_only=True)
+    id = fields.Int(dump_only=True)
     date_added = fields.DateTime(format="%Y-%m-%d %H:%M")
     url = fields.URL(required=True, relative=False, require_tld=True)
-    user_id = fields.Int(strict=True, required=True, load_only=True)
+    user_id = fields.Int(required=True, load_only=True)
     title = fields.Str(allow_none=True)
     read = fields.Bool(default=False)
     category = fields.Str(allow_none=True)
@@ -122,3 +125,27 @@ class LinkSchema(Schema):
     @post_load
     def make_link(self, data, **kwargs):
         return Link(**data)
+
+
+class LinkQuerySchema(Schema):
+    """Schema to validate GET /links endpoint URL params.
+    """
+    page = fields.Int(default=1, min=1)
+    per_page = fields.Int(default=20, min=1)
+    show = fields.Str(
+        validate=validate.OneOf(["unread", "read", "all"]),
+        default="unread"
+    )
+
+
+class MultipleLinkSchema(Schema):
+    """Schema for returning multiple link instances from the
+    GET /links endpoint.
+    """
+
+    total_links = fields.Int(required=False)
+    page = fields.Int()
+    total_pages = fields.Int()
+    next_page = fields.Int()
+    per_page = fields.Int()
+    links = fields.List(fields.Nested(LinkSchema))
