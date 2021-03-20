@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
-from marshmallow import Schema, fields, ValidationError
+from marshmallow import Schema, fields, ValidationError, post_load, EXCLUDE
 from src.exceptions import InvalidUsage
 from src.helpers import extract_title_from_url
 
@@ -106,10 +106,19 @@ class UserSchema(Schema):
 
 
 class LinkSchema(Schema):
-    id = fields.Int(strict=True, required=True, dump_only=True)
+
+    class Meta:
+        # Ignore everything passed in that isn't listed here
+        unknown = EXCLUDE
+
+    id = fields.Int(strict=True, dump_only=True)
     date_added = fields.DateTime(format="%Y-%m-%d %H:%M")
     url = fields.URL(required=True, relative=False, require_tld=True)
     user_id = fields.Int(strict=True, required=True, load_only=True)
     title = fields.Str(allow_none=True)
     read = fields.Bool(default=False)
     category = fields.Str(allow_none=True)
+
+    @post_load
+    def make_link(self, data, **kwargs):
+        return Link(**data)

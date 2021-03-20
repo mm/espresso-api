@@ -10,6 +10,7 @@ from src.general import general_bp
 from src.cli import admin_bp
 from src.auth.blueprint import auth_bp
 from src.links.blueprint import link_bp
+from src.importer.blueprint import importer_bp
 import src.handlers as handlers
 from src.exceptions import InvalidUsage, AuthError
 
@@ -54,6 +55,7 @@ def create_app(config='src.config.DevConfig', test_config=None):
     app.register_blueprint(general_bp, url_prefix='/v1')
     app.register_blueprint(auth_bp, url_prefix='/v1/auth')
     app.register_blueprint(link_bp, url_prefix='/v1/links')
+    app.register_blueprint(importer_bp, url_prefix='/v1/import')
     app.register_blueprint(admin_bp)
     app.teardown_appcontext(teardown_handler)
     # Register error handlers shared across all routes:
