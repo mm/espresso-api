@@ -26,6 +26,22 @@ def app():
         db.engine.execute(text('drop table link, "user", alembic_version;'))
 
 
+@pytest.fixture(scope='module')
+def scoped_app():
+    """Gives access to an app context for an entire module's duration,
+    and tears down DB structure afterwards.
+    """
+    app = create_app('src.config.TestConfig')
+    with app.app_context():
+        # Run migrations:
+        upgrade(directory='alembic')
+        yield app
+    
+    # Once the app fixture is no longer needed, drop the tables:
+    with app.app_context():
+        db.engine.execute(text('drop table link, "user", alembic_version;'))
+
+
 @pytest.fixture
 def seed_data(app):
     with app.app_context():
