@@ -3,7 +3,7 @@ and the database itself for links. Handles data CRUD operations.
 """
 
 from src.model import (
-    Link, db, DISALLOWED_UPDATE_FIELDS
+    User, Link, db, DISALLOWED_UPDATE_FIELDS
 )
 from src.helpers import extract_title_from_url
 
@@ -38,8 +38,10 @@ class LinkService:
             Link.date_added.desc()
         ).paginate(page=page, per_page=per_page)
 
+        total_links = len(User.query.get(user_id).links)
+
         return {
-            'total_links': None,
+            'total_links': total_links,
             'page': link_query.page,
             'total_pages': link_query.pages,
             'next_page': link_query.next_num,

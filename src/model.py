@@ -116,9 +116,9 @@ class MultipleLinkSchema(Schema):
     GET /links endpoint.
     """
 
-    total_links = fields.Int(required=False)
-    page = fields.Int()
-    total_pages = fields.Int()
+    total_links = fields.Int(default=0)
+    page = fields.Int(default=1)
+    total_pages = fields.Int(default=1)
     next_page = fields.Int()
-    per_page = fields.Int()
+    per_page = fields.Int(default=20)
     links = fields.List(fields.Nested(LinkSchema))
