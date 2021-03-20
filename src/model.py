@@ -103,8 +103,8 @@ class LinkSchema(Schema):
 class LinkQuerySchema(Schema):
     """Schema to validate GET /links endpoint URL params.
     """
-    page = fields.Int(default=1, min=1)
-    per_page = fields.Int(default=20, min=1)
+    page = fields.Int(default=1, validate=validate.Range(min=1))
+    per_page = fields.Int(default=20, validate=validate.Range(min=1))
     show = fields.Str(
         validate=validate.OneOf(["unread", "read", "all"]),
         default="unread"
