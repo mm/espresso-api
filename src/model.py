@@ -1,8 +1,10 @@
 from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
-from marshmallow import Schema, fields, ValidationError, post_load, EXCLUDE
+from marshmallow import Schema, fields, ValidationError, post_load, EXCLUDE, validate
 from src.exceptions import InvalidUsage
 from src.helpers import extract_title_from_url
+
+DISALLOWED_UPDATE_FIELDS = ('id', 'user_id')
 
 # Initially, the database isn't bound to an app. This is so
 # we can bind to one while our app is being created in our
@@ -49,32 +51,6 @@ class User(db.Model):
         return new_user.id
 
 
-    def create_link(self, url=None, title=None, **kwargs):
-        """Adds a link to the database for the given user.
-        If the title attribute is None, will call a helper function to
-        attempt to scrape the title from the HTML of the website passed in.
-        Will also raise an exception if the URL ended up being invalid.
-
-        Returns the ID of the link entry in the database if successful.
-        """
-        
-        # Load into the Link schema to catch any errors. We'll catch ValidationErrors
-        # at the blueprint level:
-        errors = LinkSchema().validate(dict(user_id=self.id, title=title, url=url))
-        if errors:
-            raise ValidationError(message=errors)
-
-        # Try and extract our title from the URL if it's not provided.
-        # If the title can't be extracted, a value of None is still okay.
-        if title is None:
-            title = extract_title_from_url(url)
-
-        # Add this link to the database:
-        link = Link(user_id=self.id, title=title, url=url)
-        db.session.add(link)
-        db.session.commit()
-        return link.id
-
     @classmethod
     def user_at_uid(cls, uid: str):
         return cls.query.filter_by(external_uid=uid).first()
@@ -97,24 +73,24 @@ class Link(db.Model):
 
 
 # Schema:
-
 class UserSchema(Schema):
-    id = fields.Int(strict=True, required=True)
+    id = fields.Int(required=True)
     name = fields.Str()
     # Setting api_key as load_only ensures any dumps don't contain it:
     api_key = fields.Str(required=True, load_only=True)
 
 
 class LinkSchema(Schema):
-
+    """Schema for adding and retrieving links from the database.
+    """
     class Meta:
         # Ignore everything passed in that isn't listed here
         unknown = EXCLUDE
 
-    id = fields.Int(strict=True, dump_only=True)
+    id = fields.Int(dump_only=True)
     date_added = fields.DateTime(format="%Y-%m-%d %H:%M")
     url = fields.URL(required=True, relative=False, require_tld=True)
-    user_id = fields.Int(strict=True, required=True, load_only=True)
+    user_id = fields.Int(required=True, load_only=True)
     title = fields.Str(allow_none=True)
     read = fields.Bool(default=False)
     category = fields.Str(allow_none=True)
@@ -122,3 +98,27 @@ class LinkSchema(Schema):
     @post_load
     def make_link(self, data, **kwargs):
         return Link(**data)
+
+
+class LinkQuerySchema(Schema):
+    """Schema to validate GET /links endpoint URL params.
+    """
+    page = fields.Int(default=1, min=1)
+    per_page = fields.Int(default=20, min=1)
+    show = fields.Str(
+        validate=validate.OneOf(["unread", "read", "all"]),
+        default="unread"
+    )
+
+
+class MultipleLinkSchema(Schema):
+    """Schema for returning multiple link instances from the
+    GET /links endpoint.
+    """
+
+    total_links = fields.Int(default=0)
+    page = fields.Int(default=1)
+    total_pages = fields.Int(default=1)
+    next_page = fields.Int()
+    per_page = fields.Int(default=20)
+    links = fields.List(fields.Nested(LinkSchema))
