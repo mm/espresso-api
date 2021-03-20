@@ -31,7 +31,7 @@ def test_invalid_pagination_for_links(client, seed_data, url):
     user_id, api_key = seed_data
     rv = client.get(url, headers={'x-api-key': api_key})
     json_data = rv.get_json()
-    assert json_data['message'] == "The page and per_page parameters must be integers"
+    assert json_data['message'] == "The submitted data failed validation checks"
 
 
 # TODO: Expand this to test out pagination better, without being dependent on seed amounts:
@@ -117,7 +117,7 @@ def test_link_post_infer_title(client, seed_data, url, title):
 
 
 @pytest.mark.parametrize(('payload', 'status_code', 'validation_error'), (
-    ({}, 422, 'Field may not be null.'),
+    ({}, 422, 'Missing data for required field.'),
     ({'url': 'frifh123'}, 422, 'Not a valid URL.'),
     ({'url': 'google'}, 422, 'Not a valid URL.'),
     ({'url': 'google.com'}, 422, 'Not a valid URL.')
@@ -152,7 +152,7 @@ def test_link_delete(client, seed_data, url, status_code, message):
 @pytest.mark.parametrize(('id', 'payload', 'status_code', 'message'), (
     (1, {'read': True}, 200, 'Link with ID 1 updated successfully'),
     (2, {'read': True, 'title': 'Updated title'}, 200, 'Link with ID 2 updated successfully'),
-    (2, None, 400, 'This method expects valid JSON data as the request body'),
+    (2, None, 422, 'The submitted data failed validation checks'),
     (2, {}, 200, 'Link with ID 2 updated successfully'),
     (150, {'read': True}, 404, 'Requested resource was not found'),
     (3, {'url': 'hryufhryf'}, 422, 'The submitted data failed validation checks'),

@@ -51,32 +51,6 @@ class User(db.Model):
         return new_user.id
 
 
-    def create_link(self, url=None, title=None, **kwargs):
-        """Adds a link to the database for the given user.
-        If the title attribute is None, will call a helper function to
-        attempt to scrape the title from the HTML of the website passed in.
-        Will also raise an exception if the URL ended up being invalid.
-
-        Returns the ID of the link entry in the database if successful.
-        """
-        
-        # Load into the Link schema to catch any errors. We'll catch ValidationErrors
-        # at the blueprint level:
-        errors = LinkSchema().validate(dict(user_id=self.id, title=title, url=url))
-        if errors:
-            raise ValidationError(message=errors)
-
-        # Try and extract our title from the URL if it's not provided.
-        # If the title can't be extracted, a value of None is still okay.
-        if title is None:
-            title = extract_title_from_url(url)
-
-        # Add this link to the database:
-        link = Link(user_id=self.id, title=title, url=url)
-        db.session.add(link)
-        db.session.commit()
-        return link.id
-
     @classmethod
     def user_at_uid(cls, uid: str):
         return cls.query.filter_by(external_uid=uid).first()
@@ -99,7 +73,6 @@ class Link(db.Model):
 
 
 # Schema:
-
 class UserSchema(Schema):
     id = fields.Int(required=True)
     name = fields.Str()
