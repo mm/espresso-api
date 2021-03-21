@@ -1,6 +1,7 @@
 from tests.factories import UserFactory, LinkFactory
 from src.links.service import LinkService
 from werkzeug.exceptions import NotFound
+from unittest.mock import patch
 import pytest
 
 
@@ -90,3 +91,16 @@ def test_get_links_show_param(scoped_app, show_param):
         assert all((x == True for x in read_statuses))
     elif show_param == 'unread':
         assert all((x == False for x in read_statuses))
+
+
+def test_create_link_without_title(scoped_app):
+    """When creating a link without a title, the service should
+    try to fetch the title from the website's HTML
+    """
+
+    with patch('src.helpers.requests') as mock_requests:
+        mock_requests.get.return_value.text = '<title>Never Gonna</title>'
+
+        link = LinkFactory(title=None)
+        LinkService().create_link(link)
+        assert link.title == 'Never Gonna'

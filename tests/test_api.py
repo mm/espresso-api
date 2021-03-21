@@ -1,8 +1,7 @@
-"""Tests on all Charlotte API routes."""
+"""Tests on all API routes."""
 
-from datetime import datetime
 import pytest
-from src.model import db, Link, LinkSchema
+from src.model import Link, LinkSchema
 
 link_schema = LinkSchema()
 
