@@ -38,7 +38,7 @@ class AuthService:
         """Validates a token to return a Firebase UID.
         """
         try:
-            uid = firebase.verify_id_token(id_token)
+            uid = cls.firebase.verify_id_token(id_token)
             if not uid:
                 raise AuthError("Could not find a user using that token")
             return uid
@@ -67,7 +67,7 @@ class AuthService:
         an API key (which also saves to the database)
         """
 
-        user_info = firebase.user_info_at_uid(uid)
+        user_info = cls.firebase.user_info_at_uid(uid)
         user_id = None
         # First, check: does a user already exist with this email or Firebase UID?
         user = User.query.filter(or_(User.email == user_info['email'], User.external_uid == uid)).first()

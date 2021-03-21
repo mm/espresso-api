@@ -2,7 +2,6 @@
 """
 
 import os
-from flask import current_app
 import firebase_admin
 from firebase_admin import credentials, auth
 from src.exceptions import FirebaseServiceError
@@ -14,13 +13,18 @@ class FirebaseService:
     firebase_app = None
     def __init__(self):
         firebase_enabled = bool(int(os.getenv('FIREBASE_ENABLED', '1')))
-        if firebase_enabled and (not self.firebase_app and not firebase_admin._apps):
-            service_account_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+        service_account_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+
+        if firebase_enabled and (not self.firebase_app):
             if not service_account_path:
                 raise FirebaseServiceError("Service account key not found: service not initialized")
-            self.firebase_app = firebase_admin.initialize_app(
-                credentials.Certificate(service_account_path)
-            )
+            try:
+                self.firebase_app = firebase_admin.get_app('[DEFAULT]')
+            except ValueError:
+                self.firebase_app = firebase_admin.initialize_app(
+                    credential=credentials.Certificate(service_account_path),
+                    name='[DEFAULT]'
+                )
 
     
     def user_info_at_uid(self, uid: str) -> dict:

@@ -19,10 +19,12 @@ def test_get_link(scoped_app):
 def test_update_link(scoped_app):
     link = LinkFactory()
     changes = {
-        'title': 'Hi'
+        'title': 'Hi',
+        'url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
     }
     LinkService().update_link(link, changes)
     assert link.title == 'Hi'
+    assert link.url == 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
 
 
 def test_update_link_no_user_id_overwrite(scoped_app):
@@ -38,6 +40,7 @@ def test_update_link_no_user_id_overwrite(scoped_app):
     }
     LinkService().update_link(link, changes)
     assert link.user_id == ORIGINAL_USER_ID
+    assert link.title == 'Changing something'
 
 
 def test_update_link_no_id_overwrite(scoped_app):
@@ -80,10 +83,10 @@ def test_get_links_show_param(scoped_app, show_param):
     params = {'page': 1, 'per_page': 50, 'show': show_param}
 
     response = link_service.get_many_links(user.id, params)
-    for link in response['links']:
-        if show_param == 'all':
-            assert (link.read) or (not link.read)
-        elif show_param == 'read':
-            assert link.read
-        elif show_param == 'unread':
-            assert not link.read
+    read_statuses = [x.read for x in response['links']]
+    if show_param == 'all':
+        assert all((type(x) == bool for x in read_statuses))
+    elif show_param == 'read':
+        assert all((x == True for x in read_statuses))
+    elif show_param == 'unread':
+        assert all((x == False for x in read_statuses))
