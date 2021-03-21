@@ -1,5 +1,6 @@
 import factory
 from src.model import Link, User, db
+from hashlib import sha256
 
 
 class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
@@ -11,7 +12,7 @@ class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
     id = factory.Sequence(lambda n: n+1)
     name = factory.Faker('name')
     email = factory.Faker('email')
-    api_key = factory.Faker('uuid4')
+    api_key = factory.Faker('uuid4', cast_to=str)
 
 
 class LinkFactory(factory.alchemy.SQLAlchemyModelFactory):

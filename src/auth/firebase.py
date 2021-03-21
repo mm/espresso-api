@@ -21,6 +21,7 @@ class FirebaseService:
             try:
                 self.firebase_app = firebase_admin.get_app('[DEFAULT]')
             except ValueError:
+                # get_app raises a ValueError if the app does not already exist:
                 self.firebase_app = firebase_admin.initialize_app(
                     credential=credentials.Certificate(service_account_path),
                     name='[DEFAULT]'
