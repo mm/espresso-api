@@ -1,5 +1,5 @@
 """
-Unit tests to run on any helper functions Charlotte depends on.
+Unit tests to run on any helper functions.
 """
 
 import pytest

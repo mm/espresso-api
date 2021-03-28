@@ -17,7 +17,7 @@ from src.exceptions import InvalidUsage, AuthError
 migrate = Migrate()
 
 def create_app(config='src.config.DevConfig', test_config=None):
-    """The application factory for Charlotte. Sets up configuration
+    """The application factory for Espresso. Sets up configuration
     parameters, sets up the database connection and hooks up the view
     blueprints for all the API routes.
 

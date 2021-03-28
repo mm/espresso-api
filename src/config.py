@@ -1,5 +1,5 @@
 """Handles setting up Flask configuration variables depending on the environment
-Charlotte is running in.
+Espresso is running in.
 """
 
 import os

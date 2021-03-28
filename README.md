@@ -1,6 +1,6 @@
-# 🕷 Charlotte (API)
+# ☕️ Espresso (API)
 
-This is the backend that powers Charlotte, my personal link-saving tool for saving websites to read later, named after [a pretty awesome spider](https://en.wikipedia.org/wiki/Charlotte%27s_Web). It uses PostgreSQL to store URLs to read, and contains a REST API (built with Flask) that allows other applications to add/modify links easily (this allows me to add [Shortcuts](https://apps.apple.com/us/app/shortcuts/id915249334) actions to capture URLs quickly from any application with a share sheet, or create a send-to-email URL saving service).
+This is the backend that powers Espresso, my personal link-saving tool for saving websites to read later. It uses PostgreSQL to store URLs to read, and contains a REST API (built with Flask) that allows other applications to add/modify links easily (this allows me to add [Shortcuts](https://apps.apple.com/us/app/shortcuts/id915249334) actions to capture URLs quickly from any application with a share sheet, or create a send-to-email URL saving service).
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@ This is the backend that powers Charlotte, my personal link-saving tool for savi
 
 ## 🚀 Getting started
 
-This will get you started on getting Charlotte installed locally to play with the API.
+This will get you started on getting Espresso installed locally to play with the API.
 
 ### Prerequisites
 
@@ -39,7 +39,7 @@ Choose your adventure!
 
 ### Installing locally (with Docker Compose)
 
-1. Clone this repository in the directory of your choosing: `git clone https://github.com/mm/charlotte-api.git`
+1. Clone this repository in the directory of your choosing: `git clone https://github.com/mm/espresso-api.git`
 
 2. Ensure [Docker](https://www.docker.com/) is running (and Docker Compose [is installed](https://docs.docker.com/compose/install/))
 
@@ -51,7 +51,7 @@ Choose your adventure!
 
 4. Update environment variables in `.env` to your liking -- these control the PostgreSQL username, password and database. The `DB_HOST` variable isn't used in Docker Compose builds.
 
-5. Build and run Charlotte! `docker-compose up -d`
+5. Build and run Espresso! `docker-compose up -d`
 
 6. Upgrade the database structure to the latest version: `docker-compose run web flask db upgrade`
 
@@ -65,12 +65,12 @@ Choose your adventure!
 
 ### Installing locally (Manual)
 
-1. Clone this repository in the directory of your choosing: `git clone https://github.com/mm/charlotte-api.git`
+1. Clone this repository in the directory of your choosing: `git clone https://github.com/mm/espresso-api.git`
 
 2. Install dependencies with [Pipenv](https://pipenv.pypa.io/en/latest/):
 
     ```console
-    $ cd charlotte-api
+    $ cd espresso-api
     $ pipenv install
     ```
 
@@ -101,7 +101,7 @@ Choose your adventure!
 
 ### Deploying to Heroku
 
-I deploy Charlotte to Heroku for my own use. Here's how it can be done:
+I deploy Espresso to Heroku for my own use. Here's how it can be done:
 
 1. Sign up for Heroku if you haven't already. Set up a new app and [provision the Heroku Postgres addon](https://devcenter.heroku.com/articles/heroku-postgresql#provisioning-heroku-postgres) for it. When you deploy this app to Heroku, the `DATABASE_URL` environment variable will be used automatically to give the correct URL for the Heroku Postgres instance (no need to copy it anywhere)
 

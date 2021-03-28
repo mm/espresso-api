@@ -1,4 +1,4 @@
-"""Helper functions used in Charlotte.
+"""Helper functions used in Espresso.
 """
 
 import requests
