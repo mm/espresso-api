@@ -2,6 +2,11 @@
 
 This is the backend that powers Espresso, my personal link-saving tool for saving websites to read later. It uses PostgreSQL to store URLs to read, and contains a REST API (built with Flask) that allows other applications to add/modify links easily (this allows me to add [Shortcuts](https://apps.apple.com/us/app/shortcuts/id915249334) actions to capture URLs quickly from any application with a share sheet, or create a send-to-email URL saving service).
 
+----
+🚧 **Under Construction**: Espresso is still being developed. Hoping to release it as a self-hosted link saving tool!
+
+----
+
 ## Table of Contents
 
 * [Getting started](#-getting-started)
