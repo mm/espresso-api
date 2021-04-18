@@ -105,24 +105,6 @@ def test_link_post(client, seed_data):
 
 
 @pytest.mark.parametrize(
-    ("url", "title"),
-    (
-        ("https://www.microsoft.com/en-ca/", "Microsoft - Official Home Page"),
-        ("https://github.com", "GitHub: Where the world builds software · GitHub"),
-    ),
-)
-def test_link_post_infer_title(client, seed_data, url, title):
-    """POSTing a link without a title should cause the title of the URL to be
-    inferred.
-    """
-    user_id, api_key = seed_data
-    rv = client.post("/v1/links", headers={"x-api-key": api_key}, json={"url": url})
-    json_data = rv.get_json()
-    assert rv.status_code == 201
-    assert json_data["title"] == title
-
-
-@pytest.mark.parametrize(
     ("payload", "status_code", "validation_error"),
     (
         ({}, 422, "Missing data for required field."),

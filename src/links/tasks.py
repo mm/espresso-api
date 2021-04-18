@@ -1,13 +1,13 @@
 from src.signals import link_created
-from .service import LinkService
+from src.tasks import populate_link_title
+
 
 def link_created_receive(sender, **kwargs):
-    link_service = LinkService()
-    link = link_service.get_link(kwargs['link_id'])
-
-    if not link.title:
-        title = link_service.extract_title_from_url(link.url)
-        link_service.update_link(link, {'title': title})
+    link_id = kwargs["link_id"]
+    link_url = kwargs["link_url"]
+    link_title = kwargs["link_title"]
+    if not link_title:
+        populate_link_title.delay(link_id, link_url)
 
 
 # Subscribe to signals:

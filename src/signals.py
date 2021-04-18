@@ -5,4 +5,4 @@ from blinker import Namespace
 
 espresso_signals = Namespace()
 
-link_created = espresso_signals.signal('link-created')
+link_created = espresso_signals.signal("link-created")

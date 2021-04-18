@@ -8,6 +8,7 @@ from parsel import Selector
 from typing import Union
 import requests
 
+
 class LinkService:
     def get_link(self, link_id: int) -> Link:
         """Attempts to retrieve a link at a given ID. Raises a 404
@@ -56,9 +57,9 @@ class LinkService:
         db.session.add(link)
         db.session.commit()
 
-        link_created.send(self, **{
-            "link_id": link.id
-        })
+        link_created.send(
+            self, **{"link_id": link.id, "link_url": link.url, "link_title": link.title}
+        )
 
         return link
 

@@ -5,7 +5,7 @@ Espresso is running in.
 import os
 
 
-class Config(object):
+class Config:
     """Base configuration all other configurations inherit from."""
 
     db_string = "postgresql://{user}:{password}@{host}/{db}".format(
@@ -20,6 +20,16 @@ class Config(object):
     # env vars:
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", default=db_string)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+
+class CeleryConfig:
+    broker_string = "pyamqp://{user}:{password}@localhost:5672//".format(
+        user=os.getenv("RABBITMQ_DEFAULT_USER"),
+        password=os.getenv("RABBITMQ_DEFAULT_PASS"),
+    )
+    broker_url = os.getenv("AMQP_URI", broker_string)
+    timezone = "America/Toronto"
+    enable_utc = True
 
 
 class DevConfig(Config):

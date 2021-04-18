@@ -22,6 +22,8 @@ colorama = "*"
 firebase-admin = "*"
 faker = "*"
 factory-boy = "*"
+celery = "*"
+blinker = "*"
 
 [dev-packages]
 black = "*"

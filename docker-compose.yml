@@ -5,6 +5,7 @@ services:
         build: .
         depends_on: 
             - db
+            - rabbitmq
         command: gunicorn --bind 0.0.0.0:8000 --reload "src:create_app()"
         ports:
             - "8000:8000"
@@ -23,3 +24,28 @@ services:
             - POSTGRES_USER=${DB_USER}
             - POSTGRES_PASSWORD=${DB_PASSWORD}
             - POSTGRES_DB=${DB_DATABASE}
+
+    rabbitmq:
+        image: rabbitmq:latest
+        ports:
+            - "5672:5672"
+        environment:
+            - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+            - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+
+    worker:
+        build: .
+        depends_on:
+            - "db"
+            - "rabbitmq"
+        links:
+            - rabbitmq:rabbitmq
+        environment:
+            - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db/${DB_DATABASE}
+            - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+            - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+            - AMQP_URI=pyamqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq//
+        command:
+            celery -A celery_worker.celery worker
+        
+
