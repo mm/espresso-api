@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import Schema, fields, ValidationError, post_load, EXCLUDE, validate
 from src.exceptions import InvalidUsage
-from src.helpers import extract_title_from_url
 
 DISALLOWED_UPDATE_FIELDS = ("id", "user_id")
 
