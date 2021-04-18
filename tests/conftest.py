@@ -47,14 +47,6 @@ def scoped_app():
 
 
 @pytest.fixture
-def seed_data(app):
-    with app.app_context():
-        user_id, api_key = seed.seed_self(name="Matt", email="matt@example.com")
-        seed.seed_links(user_id)
-    return user_id, api_key
-
-
-@pytest.fixture
 def client(app):
     """Testing client for validating API requests and responses"""
     return app.test_client()
