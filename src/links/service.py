@@ -5,7 +5,9 @@ and the database itself for links. Handles data CRUD operations.
 from src.model import (
     User, Link, db, DISALLOWED_UPDATE_FIELDS
 )
-from src.helpers import extract_title_from_url
+from parsel import Selector
+from typing import Union
+import requests
 
 
 class LinkService:
@@ -57,7 +59,7 @@ class LinkService:
         """
 
         if link.title is None:
-            link.title = extract_title_from_url(link.url)
+            link.title = self.extract_title_from_url(link.url)
         
         db.session.add(link)
         db.session.commit()
@@ -92,3 +94,17 @@ class LinkService:
         except Exception as e:
             print(f"Delete exception: {e}")
             raise
+
+    @staticmethod
+    def extract_title_from_url(url: str) -> Union[str, None]:
+        """Attempts to extract the title from a website using
+        its <title> tag, or None if not possible.
+        """
+        if url:
+            html_text = requests.get(url).text
+            selector = Selector(text=html_text)
+            title = selector.xpath('//title/text()').get()
+            if title:
+                title = title.strip()
+            return title
+        return None

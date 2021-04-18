@@ -104,3 +104,13 @@ def test_create_link_without_title(scoped_app):
         link = LinkFactory(title=None)
         LinkService().create_link(link)
         assert link.title == 'Never Gonna'
+
+@pytest.mark.parametrize(('url', 'title'), (
+    ('https://google.ca', 'Google'),
+    ('https://mascioni.ca', 'Matthew Mascioni'),
+    ('', None),
+    (None, None)
+))
+def test_extracting_url_title(url, title):
+    extracted_title = LinkService.extract_title_from_url(url)
+    assert extracted_title == title
