@@ -8,27 +8,26 @@ from src.model import db
 import src.manager.seed as seed
 
 # You can run these with `flask admin <command here>`:
-admin_bp = Blueprint('admin', __name__)
+admin_bp = Blueprint("admin", __name__)
 
 
-@admin_bp.cli.command('new_user')
-@click.option('--name', default='Tester', help='Name of the user to create')
-@click.option('--email', default='test@example.com', help='Email of new user to create')
-def new_user(email:str, name:str):
-    """Creates a new user with an API key.
-    """
+@admin_bp.cli.command("new_user")
+@click.option("--name", default="Tester", help="Name of the user to create")
+@click.option("--email", default="test@example.com", help="Email of new user to create")
+def new_user(email: str, name: str):
+    """Creates a new user with an API key."""
     user_id, api_key = seed.seed_self(email=email, name=name)
-    click.echo('User created:')
-    click.echo(f'User ID: {user_id}')
-    click.echo(f'API Key: {api_key}')
+    click.echo("User created:")
+    click.echo(f"User ID: {user_id}")
+    click.echo(f"API Key: {api_key}")
 
 
-@admin_bp.cli.command('dummy')
-@click.option('--email', type=str, default=None, help='Your email')
-@click.option('--name', type=str, default=None, help='Your name')
-@click.option('--users', type=int, default=30, help='Number of dummy users to create')
-@click.option('--links', type=int, default=30, help='Number of dummy links per user')
-def dummy_data(email:str, name:str, users:int, links:int):
+@admin_bp.cli.command("dummy")
+@click.option("--email", type=str, default=None, help="Your email")
+@click.option("--name", type=str, default=None, help="Your name")
+@click.option("--users", type=int, default=30, help="Number of dummy users to create")
+@click.option("--links", type=int, default=30, help="Number of dummy links per user")
+def dummy_data(email: str, name: str, users: int, links: int):
     """Generates a testing environment full of fake data. Optionally generates a record
     with your email address as well and an API key to access the account.
     """
@@ -41,35 +40,39 @@ def dummy_data(email:str, name:str, users:int, links:int):
     if email:
         user_id, api_key = seed.seed_self(email=email, name=name)
         seed.seed_links(user_id=user_id)
-        click.echo('Your user details:')
-        click.echo(f'User ID: {user_id}')
-        click.echo(f'API Key: {api_key}')
+        click.echo("Your user details:")
+        click.echo(f"User ID: {user_id}")
+        click.echo(f"API Key: {api_key}")
 
 
-@admin_bp.cli.command('clear_tables')
+@admin_bp.cli.command("clear_tables")
 def clear_tables():
-    """Deletes all data.
-    """
-    click.confirm("This will delete all data in the database tables without dropping the tables themselves. Are you sure?", abort=True)
+    """Deletes all data."""
+    click.confirm(
+        "This will delete all data in the database tables without dropping the tables themselves. Are you sure?",
+        abort=True,
+    )
     click.echo("Deleting all data...", nl=False)
     try:
         db.engine.execute('delete from "link"')
         db.engine.execute('delete from "user"')
-        click.echo('Complete')
+        click.echo("Complete")
     except Exception as e:
         current_app.logger.error(f"Error running drop_tables(): {e}")
-        click.echo("Error dropping tables, please check application logs.", err=True)    
+        click.echo("Error dropping tables, please check application logs.", err=True)
 
 
-@admin_bp.cli.command('drop_tables')
+@admin_bp.cli.command("drop_tables")
 def drop_tables():
-    """Drops all database tables.
-    """
+    """Drops all database tables."""
     # If the user responds no here, everything will abort, so we don't need to check the choice:
-    click.confirm("This will drop all application tables -- all data will be deleted. Are you sure?", abort=True)
+    click.confirm(
+        "This will drop all application tables -- all data will be deleted. Are you sure?",
+        abort=True,
+    )
     click.echo("Dropping all tables... ", nl=False)
     try:
-        db.engine.execute('drop table alembic_version;')
+        db.engine.execute("drop table alembic_version;")
         db.engine.execute('drop table "link"')
         db.engine.execute('drop table "user"')
         click.echo("Complete.")

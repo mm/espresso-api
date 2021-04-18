@@ -19,13 +19,10 @@ def test_get_link(scoped_app):
 
 def test_update_link(scoped_app):
     link = LinkFactory()
-    changes = {
-        'title': 'Hi',
-        'url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-    }
+    changes = {"title": "Hi", "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
     LinkService().update_link(link, changes)
-    assert link.title == 'Hi'
-    assert link.url == 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+    assert link.title == "Hi"
+    assert link.url == "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
 
 def test_update_link_no_user_id_overwrite(scoped_app):
@@ -35,25 +32,19 @@ def test_update_link_no_user_id_overwrite(scoped_app):
     link = LinkFactory()
     NEW_USER_ID = 8
     ORIGINAL_USER_ID = link.user_id
-    changes = {
-        'title': 'Changing something',
-        'user_id': NEW_USER_ID
-    }
+    changes = {"title": "Changing something", "user_id": NEW_USER_ID}
     LinkService().update_link(link, changes)
     assert link.user_id == ORIGINAL_USER_ID
-    assert link.title == 'Changing something'
+    assert link.title == "Changing something"
 
 
 def test_update_link_no_id_overwrite(scoped_app):
-    """You should not be able to modify the ID for a link.
-    """
+    """You should not be able to modify the ID for a link."""
     link = LinkFactory()
     NEW_ID = 42
     ORIGINAL_ID = link.id
 
-    changes = {
-        'id': NEW_ID
-    }
+    changes = {"id": NEW_ID}
     LinkService().update_link(link, changes)
     assert link.id == ORIGINAL_ID
 
@@ -71,7 +62,7 @@ def test_delete_link(scoped_app):
         LinkService().get_link(link_id)
 
 
-@pytest.mark.parametrize("show_param", ['all', 'read', 'unread'])
+@pytest.mark.parametrize("show_param", ["all", "read", "unread"])
 def test_get_links_show_param(scoped_app, show_param):
     """The 'show' parameter should control whether all, only read or
     only unread links are shown in the API response.
@@ -81,15 +72,15 @@ def test_get_links_show_param(scoped_app, show_param):
     links = LinkFactory.build_batch(100, user=user)
     link_service = LinkService()
 
-    params = {'page': 1, 'per_page': 50, 'show': show_param}
+    params = {"page": 1, "per_page": 50, "show": show_param}
 
     response = link_service.get_many_links(user.id, params)
-    read_statuses = [x.read for x in response['links']]
-    if show_param == 'all':
+    read_statuses = [x.read for x in response["links"]]
+    if show_param == "all":
         assert all((type(x) == bool for x in read_statuses))
-    elif show_param == 'read':
+    elif show_param == "read":
         assert all((x == True for x in read_statuses))
-    elif show_param == 'unread':
+    elif show_param == "unread":
         assert all((x == False for x in read_statuses))
 
 
@@ -98,19 +89,23 @@ def test_create_link_without_title(scoped_app):
     try to fetch the title from the website's HTML
     """
 
-    with patch('src.helpers.requests') as mock_requests:
-        mock_requests.get.return_value.text = '<title>Never Gonna</title>'
+    with patch("src.helpers.requests") as mock_requests:
+        mock_requests.get.return_value.text = "<title>Never Gonna</title>"
 
         link = LinkFactory(title=None)
         LinkService().create_link(link)
-        assert link.title == 'Never Gonna'
+        assert link.title == "Never Gonna"
 
-@pytest.mark.parametrize(('url', 'title'), (
-    ('https://google.ca', 'Google'),
-    ('https://mascioni.ca', 'Matthew Mascioni'),
-    ('', None),
-    (None, None)
-))
+
+@pytest.mark.parametrize(
+    ("url", "title"),
+    (
+        ("https://google.ca", "Google"),
+        ("https://mascioni.ca", "Matthew Mascioni"),
+        ("", None),
+        (None, None),
+    ),
+)
 def test_extracting_url_title(url, title):
     extracted_title = LinkService.extract_title_from_url(url)
     assert extracted_title == title

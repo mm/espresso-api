@@ -16,7 +16,8 @@ from src.exceptions import InvalidUsage, AuthError
 
 migrate = Migrate()
 
-def create_app(config='src.config.DevConfig', test_config=None):
+
+def create_app(config="src.config.DevConfig", test_config=None):
     """The application factory for Espresso. Sets up configuration
     parameters, sets up the database connection and hooks up the view
     blueprints for all the API routes.
@@ -41,21 +42,26 @@ def create_app(config='src.config.DevConfig', test_config=None):
 
     # Bind Flask-SQLAlchemy and Flask-Migrate:
     from src.model import db, User, Link
+
     db.init_app(app)
-    migrate.init_app(app, db, directory='alembic')
+    migrate.init_app(app, db, directory="alembic")
 
     # Set up rate limiting on all API routes:
-    limiter = Limiter(app=app, key_func=get_remote_address, default_limits=["5 per second", "150 per day"])
+    limiter = Limiter(
+        app=app,
+        key_func=get_remote_address,
+        default_limits=["5 per second", "150 per day"],
+    )
     limiter.limit(link_bp)
     limiter.limit(auth_bp)
     limiter.limit(general_bp)
     # Enable CORS on all endpoints:
     CORS(app)
     # Register all of our view functions with the app:
-    app.register_blueprint(general_bp, url_prefix='/v1')
-    app.register_blueprint(auth_bp, url_prefix='/v1/auth')
-    app.register_blueprint(link_bp, url_prefix='/v1/links')
-    app.register_blueprint(importer_bp, url_prefix='/v1/import')
+    app.register_blueprint(general_bp, url_prefix="/v1")
+    app.register_blueprint(auth_bp, url_prefix="/v1/auth")
+    app.register_blueprint(link_bp, url_prefix="/v1/links")
+    app.register_blueprint(importer_bp, url_prefix="/v1/import")
     app.register_blueprint(admin_bp)
     app.teardown_appcontext(teardown_handler)
     # Register error handlers shared across all routes:
@@ -71,5 +77,5 @@ def create_app(config='src.config.DevConfig', test_config=None):
 
 def teardown_handler(exception):
     g.current_user = None
-    if 'current_uid' in g:
-        g.current_uid = None 
+    if "current_uid" in g:
+        g.current_uid = None

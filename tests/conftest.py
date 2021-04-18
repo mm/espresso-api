@@ -3,8 +3,8 @@
 
 import os
 
-os.environ['DB_DATABASE'] = 'espresso_test'
-os.environ['FIREBASE_ENABLED'] = '0'
+os.environ["DB_DATABASE"] = "espresso_test"
+os.environ["FIREBASE_ENABLED"] = "0"
 
 import pytest
 from src import create_app
@@ -13,30 +13,31 @@ from sqlalchemy import text
 from src.model import db
 from src.manager import seed
 
+
 @pytest.fixture
 def app():
-    app = create_app('src.config.TestConfig')
+    app = create_app("src.config.TestConfig")
     with app.app_context():
         # Run migrations:
-        upgrade(directory='alembic')
+        upgrade(directory="alembic")
     yield app
-    
+
     # Once the app fixture is no longer needed, drop the tables:
     with app.app_context():
         db.engine.execute(text('drop table link, "user", alembic_version;'))
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def scoped_app():
     """Gives access to an app context for an entire module's duration,
     and tears down DB structure afterwards.
     """
-    app = create_app('src.config.TestConfig')
+    app = create_app("src.config.TestConfig")
     with app.app_context():
         # Run migrations:
-        upgrade(directory='alembic')
+        upgrade(directory="alembic")
         yield app
-    
+
     # Once the app fixture is no longer needed, drop the tables:
     with app.app_context():
         db.engine.execute(text('drop table link, "user", alembic_version;'))

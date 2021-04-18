@@ -6,7 +6,8 @@ from typing import List, Optional
 from collections import namedtuple
 from src.model import Link
 
-ImportStats = namedtuple('ImportStats', ['imported', 'errors'])
+ImportStats = namedtuple("ImportStats", ["imported", "errors"])
+
 
 class BaseImporter(metaclass=abc.ABCMeta):
     """Interface for defining certain kinds of importers. All
@@ -16,14 +17,17 @@ class BaseImporter(metaclass=abc.ABCMeta):
     @classmethod
     def __subclasshook__(cls, subclass):
         return (
-            (hasattr(subclass, 'extract_links') and callable(subclass.load_links))
-            and (hasattr(subclass, 'transform_links') and callable(subclass.transform_links))
-            and (hasattr(subclass, 'load_links') and callable(subclass.load_links))
+            (hasattr(subclass, "extract_links") and callable(subclass.load_links))
+            and (
+                hasattr(subclass, "transform_links")
+                and callable(subclass.transform_links)
+            )
+            and (hasattr(subclass, "load_links") and callable(subclass.load_links))
             or NotImplemented
         )
 
     @abc.abstractmethod
-    def extract_links(self, path:str) -> List[Optional[dict]]:
+    def extract_links(self, path: str) -> List[Optional[dict]]:
         """Extracts links from data to be imported, and returns a list
         of dict objects.
         """

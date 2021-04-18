@@ -11,23 +11,19 @@ from .decorators import require_jwt, requires_auth
 from .service import AuthService, current_uid, current_user
 
 
-auth_bp = Blueprint('auth_bp', __name__)
+auth_bp = Blueprint("auth_bp", __name__)
 
 
-@auth_bp.route('/user', methods=['GET'])
-@requires_auth(allowed=['jwt', 'api-key'])
+@auth_bp.route("/user", methods=["GET"])
+@requires_auth(allowed=["jwt", "api-key"])
 def get_user():
-    """Returns information about the user to display on the UI.
-    """
+    """Returns information about the user to display on the UI."""
     user = current_user()
     user_details = UserSchema().dump(user)
-    return jsonify(
-        **user_details,
-        links=len(user.links)
-    ), 200
+    return jsonify(**user_details, links=len(user.links)), 200
 
 
-@auth_bp.route('/user_hook', methods=['POST'])
+@auth_bp.route("/user_hook", methods=["POST"])
 @require_jwt
 def associate_new_user():
     """Receives an incoming hook when a user registers using Firebase. This
@@ -46,8 +42,8 @@ def associate_new_user():
 
 
 # TODO: Add additional protection on this endpoint, for testing purposes right now
-@auth_bp.route('/create_api_key', methods=['POST'])
-@requires_auth(allowed=['jwt'])
+@auth_bp.route("/create_api_key", methods=["POST"])
+@requires_auth(allowed=["jwt"])
 def create_api_key():
     """Creates an API key for the given user. Any existing
     API key is overwritten.

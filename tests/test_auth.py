@@ -38,7 +38,7 @@ def test_validate_api_key_positive(scoped_app):
 
 def test_validate_api_key_negative(scoped_app):
     user = UserFactory()
-    assert AuthService.validate_api_key(user.id, 'NOT_YO_KEY') == False
+    assert AuthService.validate_api_key(user.id, "NOT_YO_KEY") == False
 
 
 def test_user_for_api_key(scoped_app):
@@ -56,19 +56,19 @@ def test_associate_external_user_existing_user(scoped_app):
     in our local database, the Firebase UID should sync over to the database.
     """
 
-    with patch('src.auth.firebase.FirebaseService.user_info_at_uid') as user_at_uid:
+    with patch("src.auth.firebase.FirebaseService.user_info_at_uid") as user_at_uid:
         # Create a new user with a specific email:
-        user = UserFactory(email='matt@example.xyz')
-    
+        user = UserFactory(email="matt@example.xyz")
+
         # Prepare a response from Firebase indicating a user added with this email:
         user_at_uid.return_value = {
-            'uid': 'abc1234',
-            'name': 'MattTheTest',
-            'email': 'matt@example.xyz'
+            "uid": "abc1234",
+            "name": "MattTheTest",
+            "email": "matt@example.xyz",
         }
 
         # Attach the Firebase user ID to our internal user record:
-        AuthService.associate_external_user('abc1234')
+        AuthService.associate_external_user("abc1234")
 
         # Verify the external UID synced over from Firebase
-        assert user.external_uid == 'abc1234'
+        assert user.external_uid == "abc1234"

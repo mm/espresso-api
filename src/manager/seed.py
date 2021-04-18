@@ -8,14 +8,14 @@ from src.model import User, Link, db
 from src.auth.service import AuthService
 from typing import List, Tuple
 
-fake = Faker('en_US')
+fake = Faker("en_US")
 fake.add_provider(internet)
 fake.add_provider(date_time)
 fake.add_provider(company)
 fake.add_provider(misc)
 
 
-def seed_self(email:str, name:str=None) -> Tuple[User, str]:
+def seed_self(email: str, name: str = None) -> Tuple[User, str]:
     """Seeds a dummy record with your email (can be useful
     for Firebase syncing later). Also returns an API key generated
     for the user.
@@ -23,22 +23,16 @@ def seed_self(email:str, name:str=None) -> Tuple[User, str]:
     api_key = AuthService.generate_api_key()
     if not name:
         name = fake.name()
-    user_id = User.create(
-        name=name,
-        email=email,
-        api_key=api_key.hashed_key
-    )
+    user_id = User.create(name=name, email=email, api_key=api_key.hashed_key)
     return (user_id, api_key.api_key)
 
 
-def seed_fake_users(num_users:int=30) -> List[User]:
+def seed_fake_users(num_users: int = 30) -> List[User]:
     users = []
     for _ in range(num_users):
         key = AuthService.generate_api_key()
         user = User(
-            name=fake.name(),
-            email=fake.ascii_free_email(),
-            api_key=key.hashed_key
+            name=fake.name(), email=fake.ascii_free_email(), api_key=key.hashed_key
         )
         db.session.add(user)
         users.append(user)
@@ -46,22 +40,20 @@ def seed_fake_users(num_users:int=30) -> List[User]:
     return users
 
 
-def seed_links(user_id:int, num_links:int = 30):
+def seed_links(user_id: int, num_links: int = 30):
     for _ in range(num_links):
         link = Link(
             user_id=user_id,
-            date_added=fake.date_time_between(
-                start_date='-2y'
-            ),
+            date_added=fake.date_time_between(start_date="-2y"),
             url=fake.uri(),
             title=fake.catch_phrase(),
-            read=fake.boolean(chance_of_getting_true=50)
+            read=fake.boolean(chance_of_getting_true=50),
         )
         db.session.add(link)
     db.session.commit()
 
 
-def seed_api_key(user_id:int) -> str:
+def seed_api_key(user_id: int) -> str:
     """Generates an API key for a given test user at a given
     user ID
     """
