@@ -43,3 +43,4 @@ class ProdConfig(Config):
 class TestConfig(Config):
     TESTING = True
     FLASK_APP = "src"
+    RATELIMIT_ENABLED = False

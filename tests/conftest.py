@@ -10,8 +10,11 @@ import pytest
 from src import create_app
 from flask_migrate import upgrade
 from sqlalchemy import text
-from src.model import db
+from src.model import db, User
 from src.manager import seed
+from src.auth.service import AuthService
+from .factories import UserFactory
+from typing import Tuple
 
 
 @pytest.fixture
@@ -55,6 +58,24 @@ def seed_data(app):
 def client(app):
     """Testing client for validating API requests and responses"""
     return app.test_client()
+
+
+@pytest.fixture(scope="module")
+def scoped_client(scoped_app):
+    """Test client that persists throughout a module."""
+    return scoped_app.test_client()
+
+
+@pytest.fixture
+def test_user(scoped_app) -> Tuple[User, str]:
+    """Creates a user and returns a tuple containing the
+    User object, and an API key to access their resources
+    for the scope of the test.
+    """
+    user = UserFactory()
+    api_pair = AuthService.generate_api_key()
+    user.api_key = api_pair.hashed_key
+    return (user, api_pair.api_key)
 
 
 @pytest.fixture
