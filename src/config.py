@@ -21,6 +21,12 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", default=db_string)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    if os.getenv("REDIS_BASE_URL"):
+        RATELIMIT_STORAGE_URL = os.getenv("REDIS_BASE_URL") + "/1"
+    else:
+        RATELIMIT_STORAGE_URL = "memory://"
+
+
 class CeleryConfig:
     broker_string = "redis://localhost:6379/0"
     broker_url = os.getenv("BROKER_URL", broker_string)
@@ -30,8 +36,7 @@ class CeleryConfig:
 
 class DevConfig(Config):
     DEBUG = True
-    if os.getenv('REDIS_BASE_URL'):
-        RATELIMIT_STORAGE_URL = os.getenv('REDIS_BASE_URL') + '/1'  # 0 is used by worker
+
 
 class ProdConfig(Config):
     DEBUG = False
