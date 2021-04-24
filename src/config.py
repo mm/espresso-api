@@ -5,7 +5,7 @@ Espresso is running in.
 import os
 
 
-class Config(object):
+class Config:
     """Base configuration all other configurations inherit from."""
 
     db_string = "postgresql://{user}:{password}@{host}/{db}".format(
@@ -21,6 +21,18 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", default=db_string)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    if os.getenv("REDIS_BASE_URL"):
+        RATELIMIT_STORAGE_URL = os.getenv("REDIS_BASE_URL") + "/1"
+    else:
+        RATELIMIT_STORAGE_URL = "memory://"
+
+
+class CeleryConfig:
+    broker_string = "redis://localhost:6379/0"
+    broker_url = os.getenv("BROKER_URL", broker_string)
+    timezone = "America/Toronto"
+    enable_utc = True
+
 
 class DevConfig(Config):
     DEBUG = True
@@ -33,3 +45,4 @@ class ProdConfig(Config):
 class TestConfig(Config):
     TESTING = True
     FLASK_APP = "src"
+    RATELIMIT_ENABLED = False

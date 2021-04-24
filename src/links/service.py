@@ -3,6 +3,7 @@ and the database itself for links. Handles data CRUD operations.
 """
 
 from src.model import User, Link, db, DISALLOWED_UPDATE_FIELDS
+from src.signals import link_created
 from parsel import Selector
 from typing import Union
 import requests
@@ -53,11 +54,12 @@ class LinkService:
         later using Marshmallow.
         """
 
-        if link.title is None:
-            link.title = self.extract_title_from_url(link.url)
-
         db.session.add(link)
         db.session.commit()
+
+        link_created.send(
+            self, **{"link_id": link.id, "link_url": link.url, "link_title": link.title}
+        )
 
         return link
 

@@ -5,13 +5,17 @@ services:
         build: .
         depends_on: 
             - db
+            - redis
+            - worker
         command: gunicorn --bind 0.0.0.0:8000 --reload "src:create_app()"
         ports:
             - "8000:8000"
         links:
             - db:db
+            - redis:redis
         environment:
             - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db/${DB_DATABASE}
+            - REDIS_BASE_URL=redis://redis
         volumes:
             - .:/readlater
     
@@ -23,3 +27,23 @@ services:
             - POSTGRES_USER=${DB_USER}
             - POSTGRES_PASSWORD=${DB_PASSWORD}
             - POSTGRES_DB=${DB_DATABASE}
+
+    redis:
+        image: redis:latest
+        ports: 
+            - "6379:6379"
+
+    worker:
+        build: .
+        depends_on:
+            - "db"
+            - "redis"
+        links:
+            - redis:redis
+        environment:
+            - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db/${DB_DATABASE}
+            - BROKER_URL=redis://redis/0
+        command:
+            celery -A celery_worker.celery worker
+        
+

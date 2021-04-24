@@ -89,11 +89,11 @@ def test_create_link_without_title(scoped_app):
     try to fetch the title from the website's HTML
     """
 
-    with patch("src.helpers.requests") as mock_requests:
+    with patch("src.links.service.requests") as mock_requests:
         mock_requests.get.return_value.text = "<title>Never Gonna</title>"
 
         link = LinkFactory(title=None)
-        LinkService().create_link(link)
+        link.title = LinkService.extract_title_from_url(link.url)
         assert link.title == "Never Gonna"
 
 

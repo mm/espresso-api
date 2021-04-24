@@ -1,20 +1,22 @@
 from marshmallow import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 from flask import Flask, g
+from celery import Celery
 from flask_limiter import Limiter
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_limiter.util import get_remote_address
 from dotenv import find_dotenv, load_dotenv
-from src.general import general_bp
-from src.cli import admin_bp
-from src.auth.blueprint import auth_bp
-from src.links.blueprint import link_bp
-from src.importer.blueprint import importer_bp
 import src.handlers as handlers
 from src.exceptions import InvalidUsage, AuthError
+from .config import CeleryConfig
+
+# If we have .env files present, load them:
+if find_dotenv():
+    load_dotenv()
 
 migrate = Migrate()
+celery = Celery(__name__, broker=CeleryConfig.broker_url)
 
 
 def create_app(config="src.config.DevConfig", test_config=None):
@@ -27,15 +29,17 @@ def create_app(config="src.config.DevConfig", test_config=None):
     - test_config: Key-value mappings to override common configuration (i.e. for
     running unit tests and overriding the database URI)
     """
-
-    # If we have .env files present, load them:
-    if find_dotenv():
-        load_dotenv()
+    from src.general import general_bp
+    from src.cli import admin_bp
+    from src.auth.blueprint import auth_bp
+    from src.links.blueprint import link_bp
+    from src.importer.blueprint import importer_bp
 
     app = Flask(__name__)
     # Load configuration from an object. Note that all sensitive values
     # are fetched from environment variables (see config.py):
     app.config.from_object(config)
+    celery.config_from_object("src.config.CeleryConfig")
     # Override anything we need to for unit tests:
     if test_config:
         app.config.from_mapping(test_config)

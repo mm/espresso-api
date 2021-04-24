@@ -1,22 +1,11 @@
-"""Tests on all API routes."""
-
 import pytest
 from src.model import Link, LinkSchema
+from .factories import LinkFactory
 
-link_schema = LinkSchema()
 
-
-def test_user(client, seed_data):
-    """When /user is accessed, the current user for the provided API key should
-    be outputted with the number of links, ID and name.
-    """
-    user_id, api_key = seed_data
-    rv = client.get("/v1/auth/user", headers={"x-api-key": api_key})
-    json_data = rv.get_json()
-    assert rv.status_code == 200
-    assert "id" in json_data
-    assert "links" in json_data
-    assert "name" in json_data
+def test_no_api_key_should_401(scoped_client):
+    rv = scoped_client.get("/v1/links")
+    assert rv.status_code == 401
 
 
 @pytest.mark.parametrize(
@@ -27,23 +16,23 @@ def test_user(client, seed_data):
         "/v1/links?page=a&per_page=1",
     ],
 )
-def test_invalid_pagination_for_links(client, seed_data, url):
+def test_invalid_pagination_for_links(scoped_client, test_user, url: str):
     """If a user accidentally puts a non-integer into the page or
     per_page parameters, warn them about that.
     """
-    user_id, api_key = seed_data
-    rv = client.get(url, headers={"x-api-key": api_key})
+    user, api_key = test_user
+
+    rv = scoped_client.get(url, headers={"x-api-key": api_key})
     json_data = rv.get_json()
     assert json_data["message"] == "The submitted data failed validation checks"
 
 
-# TODO: Expand this to test out pagination better, without being dependent on seed amounts:
-def test_links_response(client, seed_data):
+def test_links_response(scoped_client, test_user):
     """A request to /links should give back the list of links, but
     also pagination info and total links.
     """
-    user_id, api_key = seed_data
-    rv = client.get("/v1/links", headers={"x-api-key": api_key})
+    user, api_key = test_user
+    rv = scoped_client.get("/v1/links", headers={"x-api-key": api_key})
     json_data = rv.get_json()
     assert "next_page" in json_data
     assert "per_page" in json_data
@@ -60,12 +49,13 @@ def test_links_response(client, seed_data):
         ("/v1/links?show=unread", "unread"),
     ),
 )
-def test_show_switch(client, seed_data, url, read_filter):
+def test_show_switch(scoped_client, test_user, url, read_filter):
     """The `show` parameter should control whether unread (default), read or all
     links are shown.
     """
-    user_id, api_key = seed_data
-    rv = client.get(url, headers={"x-api-key": api_key})
+    user, api_key = test_user
+    LinkFactory.create_batch(20, user=user)
+    rv = scoped_client.get(url, headers={"x-api-key": api_key})
     json_data = rv.get_json()
     read_statuses = [link["read"] for link in json_data["links"]]
     # If we passed in 'read' as the filter, all read statuses for the links should be True
@@ -79,47 +69,31 @@ def test_show_switch(client, seed_data, url, read_filter):
         assert all((type(x) == bool for x in read_statuses))
 
 
-def test_link_get(client, app, seed_data):
+def test_link_get(scoped_app, scoped_client, test_user):
     """GETing a link directly from /api/links/<int> should return a JSON
     response containing the date added, ID, read status, title and URL.
     """
-    user_id, api_key = seed_data
-    rv = client.get("/v1/links/2", headers={"x-api-key": api_key})
+    user, api_key = test_user
+    link = LinkFactory(user=user)
+    rv = scoped_client.get(f"/v1/links/{link.id}", headers={"x-api-key": api_key})
     json_data = rv.get_json()
-    with app.app_context():
-        link = Link.query.get(2)
-        assert link_schema.dump(link) == json_data
+    with scoped_app.app_context():
+        link = Link.query.get(link.id)
+        assert LinkSchema().dump(link) == json_data
 
 
-def test_link_post(client, seed_data):
+def test_link_post(scoped_client, test_user):
     """POSTing a link to /api/links should return a 201 - Created status code. The
     Location HTTP header should correspond to the link where you can access the new resource.
     """
-    user_id, api_key = seed_data
+    user, api_key = test_user
     body = {"title": "Netflix", "url": "https://www.netflix.com"}
-    rv = client.post("/v1/links", headers={"x-api-key": api_key}, json=body)
+    rv = scoped_client.post("/v1/links", headers={"x-api-key": api_key}, json=body)
     json_data = rv.get_json()
+    print(json_data)
     new_id = json_data["id"]
     assert rv.status_code == 201
     assert rv.headers["Location"] == "http://localhost/v1/links/" + str(new_id)
-
-
-@pytest.mark.parametrize(
-    ("url", "title"),
-    (
-        ("https://www.microsoft.com/en-ca/", "Microsoft - Official Home Page"),
-        ("https://github.com", "GitHub: Where the world builds software · GitHub"),
-    ),
-)
-def test_link_post_infer_title(client, seed_data, url, title):
-    """POSTing a link without a title should cause the title of the URL to be
-    inferred.
-    """
-    user_id, api_key = seed_data
-    rv = client.post("/v1/links", headers={"x-api-key": api_key}, json={"url": url})
-    json_data = rv.get_json()
-    assert rv.status_code == 201
-    assert json_data["title"] == title
 
 
 @pytest.mark.parametrize(
@@ -132,13 +106,13 @@ def test_link_post_infer_title(client, seed_data, url, title):
     ),
 )
 def test_link_post_invalid_url(
-    client, seed_data, payload, status_code, validation_error
+    scoped_client, test_user, payload, status_code, validation_error
 ):
     """POSTing an empty JSON payload, or an invalid URL should yield a 422, and
     a descriptive validation error in issues.url.
     """
-    user_id, api_key = seed_data
-    rv = client.post("/v1/links", headers={"x-api-key": api_key}, json=payload)
+    user, api_key = test_user
+    rv = scoped_client.post("/v1/links", headers={"x-api-key": api_key}, json=payload)
     json_data = rv.get_json()
 
     assert rv.status_code == status_code
@@ -146,56 +120,53 @@ def test_link_post_invalid_url(
     assert validation_error in json_data["issues"]["url"]
 
 
-@pytest.mark.parametrize(
-    ("url", "status_code", "message"),
-    (
-        ("/v1/links/6", 200, "Link with ID 6 deleted successfully"),
-        ("/v1/links/100", 404, "Requested resource was not found"),
-    ),
-)
-def test_link_delete(client, seed_data, url, status_code, message):
+def test_link_delete(scoped_client, test_user):
     """Sending a DELETE request to /api/links/<int:id> should return a 200 if successful,
-    and a message notifying the user that it was successful (or a 404 if not found)
+    and a message notifying the user that it was successful.
     """
-    user_id, api_key = seed_data
-    rv = client.delete(url, headers={"x-api-key": api_key})
-    assert rv.status_code == status_code
-    assert rv.get_json().get("message") == message
+    user, api_key = test_user
+    link = LinkFactory(user=user)
+    rv = scoped_client.delete(f"/v1/links/{link.id}", headers={"x-api-key": api_key})
+    assert rv.status_code == 200
+    assert (
+        rv.get_json().get("message") == f"Link with ID {link.id} deleted successfully"
+    )
 
 
 @pytest.mark.parametrize(
-    ("id", "payload", "status_code", "message"),
+    ("payload", "status_code", "message"),
     (
-        (1, {"read": True}, 200, "Link with ID 1 updated successfully"),
+        ({"read": True}, 200, "Link with ID {} updated successfully"),
         (
-            2,
             {"read": True, "title": "Updated title"},
             200,
-            "Link with ID 2 updated successfully",
+            "Link with ID {} updated successfully",
         ),
-        (2, None, 422, "The submitted data failed validation checks"),
-        (2, {}, 200, "Link with ID 2 updated successfully"),
-        (150, {"read": True}, 404, "Requested resource was not found"),
-        (3, {"url": "hryufhryf"}, 422, "The submitted data failed validation checks"),
-        (3, {"url": None}, 422, "The submitted data failed validation checks"),
+        (None, 422, "The submitted data failed validation checks"),
+        ({}, 200, "Link with ID {} updated successfully"),
+        ({"url": "hryufhryf"}, 422, "The submitted data failed validation checks"),
+        ({"url": None}, 422, "The submitted data failed validation checks"),
     ),
 )
-def test_link_patch(app, client, seed_data, id, payload, status_code, message):
+def test_link_patch(
+    scoped_app, scoped_client, test_user, payload, status_code, message
+):
     """Sending a PATCH request with a valid body and on a valid link should
     return a 200 if successful, and a message notifying the user that it was successful.
     An empty JSON payload should still yield a 200 (nothing was changed)
     """
-    user_id, api_key = seed_data
-    rv = client.patch(
-        "/v1/links/" + str(id), headers={"x-api-key": api_key}, json=payload
+    user, api_key = test_user
+    link = LinkFactory(user=user)
+    rv = scoped_client.patch(
+        f"/v1/links/{link.id}", headers={"x-api-key": api_key}, json=payload
     )
 
     assert rv.status_code == status_code
-    assert rv.get_json().get("message") == message
+    assert rv.get_json().get("message") == message.format(link.id)
 
     # Check whether our underlying object is actually updated (if we sent something valid)
     if rv.status_code == 200:
-        with app.app_context():
-            updated_link = Link.query.get(id)
+        with scoped_app.app_context():
+            updated_link = Link.query.get(link.id)
             for key, value in payload.items():
                 assert getattr(updated_link, key) == value

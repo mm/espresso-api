@@ -19,7 +19,7 @@ class LinkFactory(factory.alchemy.SQLAlchemyModelFactory):
         model = Link
         sqlalchemy_session = db.session
 
-    date_added = factory.Faker("date")
+    date_added = factory.Faker("date_time")
     id = factory.Sequence(lambda n: n + 1)
     url = factory.Faker("uri")
     title = factory.Faker("catch_phrase")
