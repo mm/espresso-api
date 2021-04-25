@@ -99,13 +99,15 @@ class TwitterService:
                     f"Issue fetching thread from the Twitter API: {response.text}"
                 )
                 return [tweet]
-            response_data = response.json()["data"]
+            response_data = response.json()
             all_tweets_in_thread = [tweet]
-            for tweet_data in response_data:
-                all_tweets_in_thread.append(Tweet(**tweet_data))
-                all_tweets_in_thread.sort(key=lambda x: x.created_date)
+            metadata = response_data['meta']
+            if metadata['result_count'] >= 1:
+                for tweet_data in response_data['data']:
+                    all_tweets_in_thread.append(Tweet(**tweet_data))
+                    all_tweets_in_thread.sort(key=lambda x: x.created_date)
 
-            return all_tweets_in_thread
+                return all_tweets_in_thread
 
         return [tweet]
 
