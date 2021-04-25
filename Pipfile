@@ -25,6 +25,7 @@ factory-boy = "*"
 celery = "*"
 blinker = "*"
 redis = "*"
+python-dateutil = "*"
 
 [dev-packages]
 black = "*"
