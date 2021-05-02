@@ -21,10 +21,19 @@ class Tweet:
     created_date: datetime = field(init=False)
     author_id: str
     conversation_id: str
+    users: list = None
     in_reply_to_user_id: str = None
+    username: str = None
 
     def __post_init__(self):
         self.created_date = isoparse(self.created_at)
+        if self.users:
+            self.username = self.users[0]["username"]
+
+    @property
+    def title(self):
+        if self.username:
+            return f"Tweet by @{self.username}"
 
 
 class TwitterService:
@@ -72,7 +81,7 @@ class TwitterService:
                     f"Issue fetching tweet from the Twitter API: {response.text}"
                 )
             response_json = response.json()
-            return Tweet(**response_json["data"])
+            return Tweet(**response_json["data"], **response_json["includes"])
         return None
 
     def expand_tweet_thread(self, tweet: Tweet) -> List[Tweet]:
@@ -101,9 +110,9 @@ class TwitterService:
                 return [tweet]
             response_data = response.json()
             all_tweets_in_thread = [tweet]
-            metadata = response_data['meta']
-            if metadata['result_count'] >= 1:
-                for tweet_data in response_data['data']:
+            metadata = response_data["meta"]
+            if metadata["result_count"] >= 1:
+                for tweet_data in response_data["data"]:
                     all_tweets_in_thread.append(Tweet(**tweet_data))
                     all_tweets_in_thread.sort(key=lambda x: x.created_date)
 

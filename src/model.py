@@ -95,7 +95,6 @@ class LinkSchema(Schema):
     read = fields.Bool(default=False)
     description = fields.Str(allow_none=True)
 
-
     @post_load
     def make_link(self, data, **kwargs):
         return Link(**data)
