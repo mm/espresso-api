@@ -65,7 +65,7 @@ class LinkService:
 
     def update_link(self, link: Link, changes: dict) -> None:
         """Updates a link given a set of changes in a dict."""
-
+        print(f'Incoming changes: {changes}')
         change_counter = 0
         for key, value in changes.items():
             if hasattr(link, key) and getattr(link, key) != value:
@@ -89,15 +89,26 @@ class LinkService:
             raise
 
     @staticmethod
-    def extract_title_from_url(url: str) -> Union[str, None]:
-        """Attempts to extract the title from a website using
-        its <title> tag, or None if not possible.
+    def extract_metadata_from_url(url: str) -> Union[dict, None]:
+        """Attempts to extract information about a website given a URL.
+
+        Args:
+            url: The URL to check.
+
+        Returns:
+            A dict with:
+            - title: Title extracted from <title> element on site
+            - description: Description extracted from og:description on site
         """
         if url:
             html_text = requests.get(url).text
             selector = Selector(text=html_text)
             title = selector.xpath("//title/text()").get()
-            if title:
-                title = title.strip()
-            return title
+            description = selector.xpath('//meta[@property="og:description"]/@content').get()
+            if not description:
+                description = selector.xpath('//meta[@name="description"]/@content').get()
+            return {
+                'title': title.strip() if title else None,
+                'description': description.strip() if description else None
+            }
         return None

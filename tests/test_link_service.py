@@ -93,7 +93,7 @@ def test_create_link_without_title(scoped_app):
         mock_requests.get.return_value.text = "<title>Never Gonna</title>"
 
         link = LinkFactory(title=None)
-        link.title = LinkService.extract_title_from_url(link.url)
+        link.title = LinkService.extract_metadata_from_url(link.url).get('title')
         assert link.title == "Never Gonna"
 
 
@@ -107,5 +107,6 @@ def test_create_link_without_title(scoped_app):
     ),
 )
 def test_extracting_url_title(url, title):
-    extracted_title = LinkService.extract_title_from_url(url)
-    assert extracted_title == title
+    metadata = LinkService.extract_metadata_from_url(url)
+    if metadata:
+        assert metadata['title'] == title

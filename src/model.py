@@ -93,7 +93,8 @@ class LinkSchema(Schema):
     user_id = fields.Int(required=True, load_only=True)
     title = fields.Str(allow_none=True)
     read = fields.Bool(default=False)
-    category = fields.Str(allow_none=True)
+    description = fields.Str(allow_none=True)
+
 
     @post_load
     def make_link(self, data, **kwargs):
