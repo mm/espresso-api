@@ -7,6 +7,7 @@ from src.tweet.service import TwitterService
 from src.signals import link_created
 from parsel import Selector
 from typing import Union
+from datetime import datetime, timezone
 import requests
 
 
@@ -54,6 +55,7 @@ class LinkService:
         Link instance and returns a persisted one to serialize to JSON
         later using Marshmallow.
         """
+        link.date_added = datetime.now(timezone.utc)
 
         db.session.add(link)
         db.session.commit()
