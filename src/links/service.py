@@ -3,6 +3,7 @@ and the database itself for links. Handles data CRUD operations.
 """
 
 from src.model import User, Link, db, DISALLOWED_UPDATE_FIELDS
+from src.tweet.service import TwitterService
 from src.signals import link_created
 from parsel import Selector
 from typing import Union
@@ -58,14 +59,19 @@ class LinkService:
         db.session.commit()
 
         link_created.send(
-            self, **{"link_id": link.id, "link_url": link.url, "link_title": link.title}
+            self,
+            **{
+                "link_id": link.id,
+                "link_url": link.url,
+                "link_title": link.title,
+                "link_description": link.description,
+            },
         )
 
         return link
 
     def update_link(self, link: Link, changes: dict) -> None:
         """Updates a link given a set of changes in a dict."""
-
         change_counter = 0
         for key, value in changes.items():
             if hasattr(link, key) and getattr(link, key) != value:
@@ -89,15 +95,40 @@ class LinkService:
             raise
 
     @staticmethod
-    def extract_title_from_url(url: str) -> Union[str, None]:
-        """Attempts to extract the title from a website using
-        its <title> tag, or None if not possible.
+    def extract_metadata_from_url(url: str) -> dict:
+        """Attempts to extract information about a website given a URL. If a specific
+        service is available to fetch custom metadata, it will be used. Otherwise,
+        the page's HTML will be analyzed directly.
+
+        Args:
+            url: The URL to check.
+
+        Returns:
+            A dict with `title` and `description` keys
         """
+        title = None
+        description = None
         if url:
-            html_text = requests.get(url).text
-            selector = Selector(text=html_text)
-            title = selector.xpath("//title/text()").get()
-            if title:
-                title = title.strip()
-            return title
-        return None
+            if url.startswith("https://twitter.com"):
+                # If we have a Twitter URL, we can use the API to get information
+                # rather than scrape the page directly:
+                twitter_service = TwitterService()
+                tweet_id = twitter_service.parse_tweet_id_from_url(url)
+                tweet = twitter_service.get_tweet_by_id(tweet_id)
+                title = tweet.title
+                description = tweet.text
+            else:
+                html_text = requests.get(url).text
+                selector = Selector(text=html_text)
+                title = selector.xpath("//title/text()").get()
+                description = selector.xpath(
+                    '//meta[@property="og:description"]/@content'
+                ).get()
+                if not description:
+                    description = selector.xpath(
+                        '//meta[@name="description"]/@content'
+                    ).get()
+        return {
+            "title": title.strip() if title else None,
+            "description": description.strip() if description else None,
+        }

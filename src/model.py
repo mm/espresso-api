@@ -66,6 +66,7 @@ class Link(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     title = db.Column(db.String(512), nullable=True)
     read = db.Column(db.Boolean, nullable=False, default=False)
+    description = db.Column(db.String)
 
     def __repr__(self):
         return "<Link: {} [{}]>".format(self.url, self.id)
@@ -92,7 +93,7 @@ class LinkSchema(Schema):
     user_id = fields.Int(required=True, load_only=True)
     title = fields.Str(allow_none=True)
     read = fields.Bool(default=False)
-    category = fields.Str(allow_none=True)
+    description = fields.Str(allow_none=True)
 
     @post_load
     def make_link(self, data, **kwargs):
