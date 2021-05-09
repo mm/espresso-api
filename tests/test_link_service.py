@@ -4,6 +4,28 @@ from werkzeug.exceptions import NotFound
 from unittest.mock import patch
 import pytest
 
+SAMPLE_OG_DESCRIPTION_TAG = """
+<html>
+<head>
+<title>Never Gonna</title>
+<meta property="og:description" content="Give you up">
+</head>
+<body>
+</body>
+</html>
+"""
+
+SAMPLE_META_DESCRIPTION_TAG = """
+<html>
+<head>
+<title>Never Gonna</title>
+<meta name="description" content="Give you up">
+</head>
+<body>
+</body>
+</html>
+"""
+
 
 def test_get_link(scoped_app):
     new_link = LinkFactory()
@@ -98,15 +120,15 @@ def test_create_link_without_title(scoped_app):
 
 
 @pytest.mark.parametrize(
-    ("url", "title"),
-    (
-        ("https://google.ca", "Google"),
-        ("https://mascioni.ca", "Matthew Mascioni"),
-        ("", None),
-        (None, None),
-    ),
+    "sample_html", [SAMPLE_META_DESCRIPTION_TAG, SAMPLE_OG_DESCRIPTION_TAG]
 )
-def test_extracting_url_title(url, title):
-    metadata = LinkService.extract_metadata_from_url(url)
-    if metadata:
-        assert metadata["title"] == title
+def test_extract_metadata_from_url(scoped_app, sample_html):
+    """The title and description should be extracted from sites with
+    a title and either meta description/object graph description tags.
+    """
+
+    with patch("src.links.service.requests") as mock_requests:
+        mock_requests.get.return_value.text = sample_html
+        metadata = LinkService.extract_metadata_from_url("https://sample.com")
+        assert metadata["title"] == "Never Gonna"
+        assert metadata["description"] == "Give you up"

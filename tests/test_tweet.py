@@ -3,7 +3,6 @@
 
 from unittest.mock import patch
 from dateutil.parser import isoparse
-from parsel.selector import SafeXMLParser
 from src.tweet.service import TwitterService
 import pytest
 
