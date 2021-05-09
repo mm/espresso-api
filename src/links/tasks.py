@@ -1,5 +1,5 @@
 from src.signals import link_created
-from src.tasks import populate_link_title
+from src.tasks import populate_link_metadata
 
 
 def link_created_receive(sender, **kwargs):
@@ -7,7 +7,7 @@ def link_created_receive(sender, **kwargs):
     link_url = kwargs["link_url"]
     link_title = kwargs["link_title"]
     if not link_title:
-        populate_link_title.delay(link_id, link_url)
+        populate_link_metadata.delay(link_id, link_url)
 
 
 # Subscribe to signals:

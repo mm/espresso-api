@@ -59,14 +59,19 @@ class LinkService:
         db.session.commit()
 
         link_created.send(
-            self, **{"link_id": link.id, "link_url": link.url, "link_title": link.title}
+            self,
+            **{
+                "link_id": link.id,
+                "link_url": link.url,
+                "link_title": link.title,
+                "link_description": link.description,
+            },
         )
 
         return link
 
     def update_link(self, link: Link, changes: dict) -> None:
         """Updates a link given a set of changes in a dict."""
-        print(f"Incoming changes: {changes}")
         change_counter = 0
         for key, value in changes.items():
             if hasattr(link, key) and getattr(link, key) != value:
