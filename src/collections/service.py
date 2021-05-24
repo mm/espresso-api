@@ -38,7 +38,7 @@ class CollectionService:
             name=document.get("name"),
             icon=icon,
             archived=False,
-            order=order
+            order=order,
         )
         db.session.add(collection)
         db.session.commit()
@@ -54,7 +54,9 @@ class CollectionService:
 
     def get_collection(self, collection_id: int, user_id: int) -> Collection:
         """Returns a single collection by ID."""
-        return Collection.query.filter_by(id=collection_id, archived=False, user_id=user_id).first()
+        return Collection.query.filter_by(
+            id=collection_id, archived=False, user_id=user_id
+        ).first()
 
     def get_collections_for_user(self, user_id: int) -> List[Collection]:
         """Returns all non-archived collections for the user
@@ -68,7 +70,9 @@ class CollectionService:
         )
         return all_collections
 
-    def bulk_update_collection_orders(self, document: dict[int, int]) -> List[Collection]:
+    def bulk_update_collection_orders(
+        self, document: dict[int, int]
+    ) -> List[Collection]:
         """Updates the order of all collections at once. Can be helpful
         when updating the order collections appear in on the UI.
 
@@ -85,4 +89,3 @@ class CollectionService:
             collection.order = new_order
 
         db.session.commit()
-

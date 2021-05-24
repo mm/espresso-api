@@ -17,6 +17,7 @@ def get_collections():
 
     return jsonify(schema.dump(collections, many=True))
 
+
 @collection_bp.route("", methods=["POST"])
 @requires_auth(allowed=["api-key", "jwt"])
 def create_collection():
@@ -28,6 +29,7 @@ def create_collection():
 
     return jsonify(message="Collection created successfully"), 201
 
+
 @collection_bp.route("/<int:id>", methods=["DELETE"])
 @requires_auth(allowed=["api-key", "jwt"])
 def archive_collection(id: int):
@@ -36,7 +38,6 @@ def archive_collection(id: int):
     collection = collection_service.get_collection(id, user.id)
     if not collection:
         return jsonify(message="Collection not found"), 404
-    
+
     collection_service.archive_collection(id)
     return jsonify(message="Collection archived successfully"), 200
-
