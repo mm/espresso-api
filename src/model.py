@@ -72,6 +72,17 @@ class Link(db.Model):
         return "<Link: {} [{}]>".format(self.url, self.id)
 
 
+class Collection(db.Model):
+    """Represents a collection of links in the database."""
+
+    __tablename__ = "collection"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)
+    date_added = db.Column(db.DateTime, nullable=False)
+    name = db.Column(db.String(128), nullable=False)
+    icon = db.Column(db.String(64), nullable=True)
+    archived = db.Column(db.Boolean)
+
 # Schema:
 class UserSchema(Schema):
     id = fields.Int(required=True)
@@ -99,6 +110,18 @@ class LinkSchema(Schema):
     def make_link(self, data, **kwargs):
         return Link(**data)
 
+class CollectionSchema(Schema):
+    
+    class Meta:
+        unknown = EXCLUDE
+    
+    id = fields.Int(dump_only=True)
+    user_id = fields.Int(allow_none=False)
+    date_added = fields.DateTime(format="%Y-%m-%d %H:%M")
+    name = fields.Str()
+    icon = fields.Str()
+    archived = fields.Bool(default=False)
+    
 
 class LinkQuerySchema(Schema):
     """Schema to validate GET /links endpoint URL params."""
