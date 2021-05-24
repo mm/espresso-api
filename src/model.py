@@ -64,6 +64,7 @@ class Link(db.Model):
     )
     url = db.Column(db.String(2048), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    collection_id = db.Column(db.Integer)
     title = db.Column(db.String(512), nullable=True)
     read = db.Column(db.Boolean, nullable=False, default=False)
     description = db.Column(db.String)
@@ -82,6 +83,7 @@ class Collection(db.Model):
     name = db.Column(db.String(128), nullable=False)
     icon = db.Column(db.String(64), nullable=True)
     archived = db.Column(db.Boolean)
+    order = db.Column(db.Integer)
 
 # Schema:
 class UserSchema(Schema):
@@ -121,6 +123,7 @@ class CollectionSchema(Schema):
     name = fields.Str()
     icon = fields.Str()
     archived = fields.Bool(default=False)
+    order = fields.Integer()
     
 
 class LinkQuerySchema(Schema):
