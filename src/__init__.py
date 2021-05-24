@@ -34,6 +34,7 @@ def create_app(config="src.config.DevConfig", test_config=None):
     from src.auth.blueprint import auth_bp
     from src.links.blueprint import link_bp
     from src.importer.blueprint import importer_bp
+    from src.collections.blueprint import collection_bp
 
     app = Flask(__name__)
     # Load configuration from an object. Note that all sensitive values
@@ -66,6 +67,7 @@ def create_app(config="src.config.DevConfig", test_config=None):
     app.register_blueprint(auth_bp, url_prefix="/v1/auth")
     app.register_blueprint(link_bp, url_prefix="/v1/links")
     app.register_blueprint(importer_bp, url_prefix="/v1/import")
+    app.register_blueprint(collection_bp, url_prefix="/v1/collections")
     app.register_blueprint(admin_bp)
     app.teardown_appcontext(teardown_handler)
     # Register error handlers shared across all routes:
