@@ -17,7 +17,7 @@ class CollectionService:
         icon = document.get("icon", ":thought balloon:")
 
         try:
-            User.get(user_id)
+            User.query.get(user_id)
         except Exception as e:
             raise ValueError("User specified does not exist")
 
@@ -47,14 +47,14 @@ class CollectionService:
     def archive_collection(self, collection_id: int) -> Collection:
         """Archives a collection by ID."""
 
-        collection = Collection.get(collection_id)
+        collection = Collection.query.get(collection_id)
         collection.archived = True
         db.session.commit()
         return collection
 
     def get_collection(self, collection_id: int) -> Collection:
         """Returns a single collection by ID."""
-        return Collection.get(collection_id)
+        return Collection.query.filter_by(id=collection_id, archived=False).first()
 
     def get_collections_for_user(self, user_id: int) -> List[Collection]:
         """Returns all non-archived collections for the user
@@ -81,7 +81,7 @@ class CollectionService:
         # will be sequential
         for collection_update in document.items():
             collection_id, new_order = collection_update
-            collection = Collection.get(collection_id)
+            collection = Collection.query.get(collection_id)
             collection.order = new_order
 
         db.session.commit()
