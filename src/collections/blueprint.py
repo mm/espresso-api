@@ -33,12 +33,9 @@ def create_collection():
 def archive_collection(id: int):
     user = current_user()
     collection_service = CollectionService()
-    collection = collection_service.get_collection(id)
+    collection = collection_service.get_collection(id, user.id)
     if not collection:
         return jsonify(message="Collection not found"), 404
-
-    if collection.user_id != user.id:
-        raise AuthError("You are not allowed to access this collection", status_code=403)
     
     collection_service.archive_collection(id)
     return jsonify(message="Collection archived successfully"), 200

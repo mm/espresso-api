@@ -136,6 +136,7 @@ class LinkQuerySchema(Schema):
     show = fields.Str(
         validate=validate.OneOf(["unread", "read", "all"]), default="unread"
     )
+    collection = fields.Int(allow_none=True)
 
 
 class MultipleLinkSchema(Schema):

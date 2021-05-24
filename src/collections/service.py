@@ -52,9 +52,9 @@ class CollectionService:
         db.session.commit()
         return collection
 
-    def get_collection(self, collection_id: int) -> Collection:
+    def get_collection(self, collection_id: int, user_id: int) -> Collection:
         """Returns a single collection by ID."""
-        return Collection.query.filter_by(id=collection_id, archived=False).first()
+        return Collection.query.filter_by(id=collection_id, archived=False, user_id=user_id).first()
 
     def get_collections_for_user(self, user_id: int) -> List[Collection]:
         """Returns all non-archived collections for the user

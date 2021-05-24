@@ -30,6 +30,7 @@ def get_links():
             "page": request.args.get("page", 1),
             "per_page": request.args.get("per_page", 20),
             "show": request.args.get("show", "unread"),
+            "collection": request.args.get("collection")
         }
     )
 

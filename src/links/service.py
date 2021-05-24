@@ -4,6 +4,7 @@ and the database itself for links. Handles data CRUD operations.
 
 from src.model import User, Link, db, DISALLOWED_UPDATE_FIELDS
 from src.tweet.service import TwitterService
+from src.collections.service import CollectionService
 from src.signals import link_created
 from parsel import Selector
 from typing import Union
@@ -27,12 +28,18 @@ class LinkService:
         """
 
         page, per_page, show = params["page"], params["per_page"], params["show"]
+        collection_id = params.get("collection")
 
         link_query = Link.query.filter(Link.user_id == user_id)
         if show == "read":
             link_query = link_query.filter(Link.read == True)
         elif show == "unread":
             link_query = link_query.filter(Link.read == False)
+
+        if collection_id:
+            collection = CollectionService().get_collection(collection_id, user_id)
+            if collection:
+                link_query = link_query.filter(Link.collection_id == collection_id)
 
         # Paginate results:
         link_query = link_query.order_by(Link.date_added.desc()).paginate(
