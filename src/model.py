@@ -85,6 +85,7 @@ class Collection(db.Model):
     archived = db.Column(db.Boolean)
     order = db.Column(db.Integer)
 
+
 # Schema:
 class UserSchema(Schema):
     id = fields.Int(required=True)
@@ -112,11 +113,11 @@ class LinkSchema(Schema):
     def make_link(self, data, **kwargs):
         return Link(**data)
 
+
 class CollectionSchema(Schema):
-    
     class Meta:
         unknown = EXCLUDE
-    
+
     id = fields.Int(dump_only=True)
     user_id = fields.Int(allow_none=False)
     date_added = fields.DateTime(format="%Y-%m-%d %H:%M")
@@ -124,7 +125,7 @@ class CollectionSchema(Schema):
     icon = fields.Str()
     archived = fields.Bool(default=False)
     order = fields.Integer()
-    
+
 
 class LinkQuerySchema(Schema):
     """Schema to validate GET /links endpoint URL params."""
