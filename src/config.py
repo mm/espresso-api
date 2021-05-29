@@ -36,6 +36,7 @@ class CeleryConfig:
 
 class DevConfig(Config):
     DEBUG = True
+    RATELIMIT_ENABLED = False
 
 
 class ProdConfig(Config):

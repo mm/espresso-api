@@ -40,6 +40,9 @@ class LinkService:
             collection = CollectionService().get_collection(collection_id, user_id)
             if collection:
                 link_query = link_query.filter(Link.collection_id == collection_id)
+        else:
+            link_query = link_query.filter(Link.collection_id == None)
+
 
         # Paginate results:
         link_query = link_query.order_by(Link.date_added.desc()).paginate(
