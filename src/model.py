@@ -108,7 +108,7 @@ class LinkSchema(Schema):
     title = fields.Str(allow_none=True)
     read = fields.Bool(default=False)
     description = fields.Str(allow_none=True)
-    collection_id = fields.Int()
+    collection_id = fields.Int(allow_none=True)
 
     @post_load
     def make_link(self, data, **kwargs):

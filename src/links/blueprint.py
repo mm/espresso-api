@@ -80,6 +80,8 @@ def update_link(id):
     AuthService.check_link_access(user.id, link)
 
     body = request.get_json()
+    if 'collection_id' in body and (body['collection_id'] == ''):
+        body['collection_id'] = None
     # Validate the incoming JSON to make sure any changes conform to the schema:
     errors = link_schema.validate(body, partial=True)
     if errors:
