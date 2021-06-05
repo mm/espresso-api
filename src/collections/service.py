@@ -45,11 +45,14 @@ class CollectionService:
         return collection
 
     def archive_collection(self, collection_id: int) -> Collection:
-        """Archives a collection by ID."""
+        """Archives a collection by ID. Will adjust the order of all collections
+        to keep a continuous order."""
 
         collection = Collection.query.get(collection_id)
         collection.archived = True
         db.session.commit()
+        self.reset_collection_order(collection.user_id)
+
         return collection
 
     def get_collection(self, collection_id: int, user_id: int) -> Collection:
@@ -70,6 +73,24 @@ class CollectionService:
         )
         return all_collections
 
+    def reset_collection_order(self, user_id: int) -> None:
+        """Resets the way collections are ordered for a given user. This is done by:
+        1. Fetching all current collections (non-archived), ordered by current order # (ascending)
+        2. Using the indices of the collections in (1) to update all order #s.
+
+        Args:
+            user_id: The user to reset collection ordering for.
+        """
+
+        all_collections = self.get_collections_for_user(user_id)
+
+        # Uses the ordering from all_collections to bulk update ordering of
+        # all non-archived collections:
+        order_mapping_document = {
+            idx: collection.id for idx, collection in enumerate(all_collections)
+        }
+        self.bulk_update_collection_orders(order_mapping_document)
+
     def bulk_update_collection_orders(
         self, document: dict[int, int]
     ) -> List[Collection]:
@@ -84,7 +105,7 @@ class CollectionService:
         # TODO: Need lots of checks to make sure orders actually exist and
         # will be sequential
         for collection_update in document.items():
-            collection_id, new_order = collection_update
+            new_order, collection_id = collection_update
             collection = Collection.query.get(collection_id)
             collection.order = new_order
 

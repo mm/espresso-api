@@ -43,7 +43,6 @@ class LinkService:
         else:
             link_query = link_query.filter(Link.collection_id == None)
 
-
         # Paginate results:
         link_query = link_query.order_by(Link.date_added.desc()).paginate(
             page=page, per_page=per_page
