@@ -17,19 +17,6 @@ from .factories import UserFactory
 from typing import Tuple
 
 
-@pytest.fixture
-def app():
-    app = create_app("src.config.TestConfig")
-    with app.app_context():
-        # Run migrations:
-        upgrade(directory="alembic")
-    yield app
-
-    # Once the app fixture is no longer needed, drop the tables:
-    with app.app_context():
-        db.engine.execute(text('drop table link, "user", collection, alembic_version;'))
-
-
 @pytest.fixture(scope="module")
 def scoped_app():
     """Gives access to an app context for an entire module's duration,
@@ -43,13 +30,19 @@ def scoped_app():
 
     # Once the app fixture is no longer needed, drop the tables:
     with app.app_context():
-        db.engine.execute(text('drop table link, "user", "collection", alembic_version;'))
+        db.engine.execute(
+            text('drop table link, "user", "collection", alembic_version;')
+        )
 
 
-@pytest.fixture
-def client(app):
-    """Testing client for validating API requests and responses"""
-    return app.test_client()
+@pytest.fixture(autouse=True)
+def clear_database(scoped_app):
+    """Clears the data in every table before each test run."""
+    with scoped_app.app_context():
+        meta = db.metadata
+        for table in reversed(meta.sorted_tables):
+            db.engine.execute(table.delete())
+        db.session.commit()
 
 
 @pytest.fixture(scope="module")
@@ -71,6 +64,6 @@ def test_user(scoped_app) -> Tuple[User, str]:
 
 
 @pytest.fixture
-def runner(app):
+def runner(scoped_app):
     """Test CLI runner to test admin CLI commands"""
     return app.test_cli_runner()

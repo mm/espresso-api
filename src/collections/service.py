@@ -1,4 +1,4 @@
-from src.model import Collection, CollectionSchema, User, db
+from src.model import Collection, User, db
 from datetime import datetime, timezone
 from typing import List
 

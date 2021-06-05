@@ -12,27 +12,30 @@ class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
     email = factory.Faker("email")
     api_key = factory.Faker("uuid4", cast_to=str)
 
-class CollectionFactory(factory.alchemy.SQLAlchemyModelFactory):
 
+class CollectionFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = Collection
         sqlalchemy_session = db.session
-        exclude = ['user']
+        exclude = ["user"]
 
     date_added = factory.Faker("date_time")
-    id = factory.Sequence(lambda n: n + 1)
+    id = factory.Sequence(lambda n: n)
     user = factory.SubFactory(UserFactory)
     user_id = factory.SelfAttribute("user.id")
     archived = factory.Faker("boolean")
-    icon = factory.Faker("random_choices", elements=[':face with raised eyebrow:', ':cold face:'])
+    icon = factory.Faker(
+        "random_choices", elements=[":face with raised eyebrow:", ":cold face:"]
+    )
     order = factory.Sequence(lambda n: n + 1)
     name = factory.Faker("word")
+
 
 class LinkFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = Link
         sqlalchemy_session = db.session
-        exclude = ['collection']
+        exclude = ["collection"]
 
     date_added = factory.Faker("date_time")
     id = factory.Sequence(lambda n: n + 1)
