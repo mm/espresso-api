@@ -66,4 +66,4 @@ def test_user(scoped_app) -> Tuple[User, str]:
 @pytest.fixture
 def runner(scoped_app):
     """Test CLI runner to test admin CLI commands"""
-    return app.test_cli_runner()
+    return scoped_app.test_cli_runner()
