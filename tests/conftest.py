@@ -27,7 +27,7 @@ def app():
 
     # Once the app fixture is no longer needed, drop the tables:
     with app.app_context():
-        db.engine.execute(text('drop table link, "user", alembic_version;'))
+        db.engine.execute(text('drop table link, "user", collection, alembic_version;'))
 
 
 @pytest.fixture(scope="module")
@@ -43,7 +43,7 @@ def scoped_app():
 
     # Once the app fixture is no longer needed, drop the tables:
     with app.app_context():
-        db.engine.execute(text('drop table link, "user", alembic_version;'))
+        db.engine.execute(text('drop table link, "user", "collection", alembic_version;'))
 
 
 @pytest.fixture
