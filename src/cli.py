@@ -15,7 +15,9 @@ admin_bp = Blueprint("admin", __name__)
 @admin_bp.cli.command("new_user")
 @click.option("--name", default="Tester", help="Name of the user to create")
 @click.option("--email", default="test@example.com", help="Email of new user to create")
-@click.option("--uid", default=None, help="Firebase UID, if user exists in Firebase Auth already")
+@click.option(
+    "--uid", default=None, help="Firebase UID, if user exists in Firebase Auth already"
+)
 def new_user(email: str, name: str, uid: Optional[str]):
     """Creates a new user with an API key."""
     user_id, api_key = seed.seed_self(email=email, name=name, external_uid=uid)
