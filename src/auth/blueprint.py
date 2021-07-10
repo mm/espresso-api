@@ -23,13 +23,12 @@ def get_user():
     return jsonify(**user_details, links=len(user.links)), 200
 
 
-@auth_bp.route("/user_hook", methods=["POST"])
+@auth_bp.route("/check_user", methods=["POST"])
 @require_jwt
 def associate_new_user():
-    """Receives an incoming hook when a user registers using Firebase. This
-    request *must* arrive with the user's JWT. It'll create an associated
-    record for them in our database, where their hashed API key will eventually
-    be stored.
+    """This endpoint is hit whenever a user signs in to the app from
+    the front-end. It must be accessed with a Firebase-issued JWT, and will check
+    if the user already exists in the database. If not, a record will be created.
     """
     uid = current_uid()
     if not uid:
@@ -38,7 +37,7 @@ def associate_new_user():
     user_id = AuthService.associate_external_user(uid=uid)
     if user_id:
         return jsonify(message="User synced in local store", id=user_id), 200
-    return jsonify(message="User already exists"), 400
+    return jsonify(message="User already exists"), 200
 
 
 # TODO: Add additional protection on this endpoint, for testing purposes right now

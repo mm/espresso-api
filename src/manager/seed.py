@@ -15,7 +15,7 @@ fake.add_provider(company)
 fake.add_provider(misc)
 
 
-def seed_self(email: str, name: str = None) -> Tuple[User, str]:
+def seed_self(email: str, name: str = None, external_uid: str = None) -> Tuple[User, str]:
     """Seeds a dummy record with your email (can be useful
     for Firebase syncing later). Also returns an API key generated
     for the user.
@@ -23,7 +23,7 @@ def seed_self(email: str, name: str = None) -> Tuple[User, str]:
     api_key = AuthService.generate_api_key()
     if not name:
         name = fake.name()
-    user_id = User.create(name=name, email=email, api_key=api_key.hashed_key)
+    user_id = User.create(name=name, email=email, api_key=api_key.hashed_key, firebase_uid=external_uid)
     return (user_id, api_key.api_key)
 
 

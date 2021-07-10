@@ -2,6 +2,7 @@
 over the Flask CLI.
 """
 
+from typing import Optional
 import click
 from flask import Blueprint, current_app
 from src.model import db
@@ -14,9 +15,10 @@ admin_bp = Blueprint("admin", __name__)
 @admin_bp.cli.command("new_user")
 @click.option("--name", default="Tester", help="Name of the user to create")
 @click.option("--email", default="test@example.com", help="Email of new user to create")
-def new_user(email: str, name: str):
+@click.option("--uid", default=None, help="Firebase UID, if user exists in Firebase Auth already")
+def new_user(email: str, name: str, uid: Optional[str]):
     """Creates a new user with an API key."""
-    user_id, api_key = seed.seed_self(email=email, name=name)
+    user_id, api_key = seed.seed_self(email=email, name=name, external_uid=uid)
     click.echo("User created:")
     click.echo(f"User ID: {user_id}")
     click.echo(f"API Key: {api_key}")
