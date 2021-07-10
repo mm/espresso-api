@@ -1,10 +1,17 @@
-FROM python:3.9.0-slim-buster AS base
+FROM python:3.9.1-slim-buster
 
-WORKDIR /readlater
-COPY . .
-RUN pip install pipenv \
-    && apt-get update \
+COPY Pipfile Pipfile
+COPY Pipfile.lock Pipfile.lock
+
+RUN apt-get update \
+    && export DEBIAN_FRONTEND=noninteractive \
     && apt-get install -y --no-install-recommends libpq-dev gcc python3-dev \
-    && pipenv install --system \
-    && apt-get --purge -y remove libpq-dev gcc python3-dev \
-    && apt autoremove -y
+    && apt-get autoremove -y \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install pipenv && pipenv install --system
+
+RUN useradd --create-home espresso
+USER espresso
+WORKDIR /home/espresso
+COPY . .

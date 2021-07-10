@@ -1,7 +1,7 @@
 """Classes to interact with the Firebase Authentication service.
 """
 
-import os
+import os, base64, json
 import firebase_admin
 from firebase_admin import credentials, auth
 from src.exceptions import FirebaseServiceError
@@ -14,10 +14,16 @@ class FirebaseService:
 
     def __init__(self):
         firebase_enabled = bool(int(os.getenv("FIREBASE_ENABLED", "1")))
-        service_account_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+        account_key = os.getenv("GOOGLE_SERVICE_ACCOUNT")
+        # Attempts to find the service account key from env variables, or a path to the key
+        # if specified at GOOGLE_APPLICATION_CREDENTIALS
+        if account_key:
+            certificate = json.loads(base64.b64decode(account_key))
+        else:
+            certificate = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
         if firebase_enabled and (not self.firebase_app):
-            if not service_account_path:
+            if not certificate:
                 raise FirebaseServiceError(
                     "Service account key not found: service not initialized"
                 )
@@ -26,7 +32,7 @@ class FirebaseService:
             except ValueError:
                 # get_app raises a ValueError if the app does not already exist:
                 self.firebase_app = firebase_admin.initialize_app(
-                    credential=credentials.Certificate(service_account_path),
+                    credential=credentials.Certificate(certificate),
                     name="[DEFAULT]",
                 )
 
