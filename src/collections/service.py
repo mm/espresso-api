@@ -1,4 +1,4 @@
-from src.model import Collection, User, db
+from src.model import Collection, Link, User, db
 from datetime import datetime, timezone
 from typing import List
 
@@ -49,6 +49,9 @@ class CollectionService:
         to keep a continuous order."""
 
         collection = Collection.query.get(collection_id)
+        links = Link.query.filter_by(collection_id=collection_id)
+        for link in links:
+            link.collection_id = None
         collection.archived = True
         db.session.commit()
         self.reset_collection_order(collection.user_id)
