@@ -1,0 +1,7 @@
+build:
+  docker:
+    web: Dockerfile
+    worker: Dockerfile
+run:
+  web: gunicorn --bind 0.0.0.0:${PORT} --reload "src:create_app()"
+  worker: celery -A celery_worker.celery worker

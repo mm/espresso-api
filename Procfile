@@ -1,1 +1,0 @@
-web: gunicorn "src:create_app('src.config.ProdConfig')"
