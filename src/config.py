@@ -28,7 +28,10 @@ class Config:
 
 
 class CeleryConfig:
-    broker_string = "redis://localhost:6379/0"
+    if os.getenv("REDIS_BASE_URL"):
+        broker_string = os.getenv("REDIS_BASE_URL") + "/1"
+    else:
+        broker_string = "redis://localhost:6379/0"
     broker_url = os.getenv("BROKER_URL", broker_string)
     timezone = "America/Toronto"
     enable_utc = True
