@@ -18,7 +18,7 @@ class Config:
     # Try to find a DATABASE_URL environment variable. If none is found,
     # fall back to one assembled from DB_USER, _PASSWORD, _HOST and _DATABASE
     # env vars:
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", default=db_string)
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", default=db_string).replace("postgres", "postgresql")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     if os.getenv("REDIS_BASE_URL"):
