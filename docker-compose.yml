@@ -15,7 +15,7 @@ services:
             - redis:redis
         environment:
             - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db/${DB_DATABASE}
-            - REDIS_BASE_URL=redis://redis
+            - REDIS_URL=redis://redis
             - TWITTER_BEARER_TOKEN=${TWITTER_BEARER_TOKEN}
             - GOOGLE_SERVICE_ACCOUNT=${GOOGLE_SERVICE_ACCOUNT}
         volumes:

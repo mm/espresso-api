@@ -21,15 +21,15 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", default=db_string).replace("postgres", "postgresql")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    if os.getenv("REDIS_BASE_URL"):
-        RATELIMIT_STORAGE_URL = os.getenv("REDIS_BASE_URL") + "/1"
+    if os.getenv("REDIS_URL"):
+        RATELIMIT_STORAGE_URL = os.getenv("REDIS_URL") + "/1"
     else:
         RATELIMIT_STORAGE_URL = "memory://"
 
 
 class CeleryConfig:
-    if os.getenv("REDIS_BASE_URL"):
-        broker_string = os.getenv("REDIS_BASE_URL") + "/1"
+    if os.getenv("REDIS_URL"):
+        broker_string = os.getenv("REDIS_URL") + "/1"
     else:
         broker_string = "redis://localhost:6379/0"
     broker_url = os.getenv("BROKER_URL", broker_string)
